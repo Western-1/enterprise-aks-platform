@@ -1,0 +1,34 @@
+﻿# Argo CD values — dev environment (bootstrap installation)
+# Full chart: https://github.com/argoproj/argo-helm/tree/master/charts/argo-cd
+
+global:
+  domain: localhost
+
+server:
+  service:
+    type: ClusterIP
+  config:
+    repositories: |
+      - type: git
+        url: https://github.com/Western-1/enterprise-aks-gitops.git
+    # admin can manage anything; users are added later via RBAC
+    rbac:
+      policy.default: role:readonly
+      policy.csv: |
+        p, role:ci-bot, applications, get, */*, allow
+        p, role:ci-bot, applications, sync, */*, allow
+        g, ci-bot, role:ci-bot
+
+controller:
+  replicas: 1
+
+repoServer:
+  replicas: 1
+
+redis:
+  enabled: true
+  replicas: 1
+
+configs:
+  params:
+    server.insecure: true
