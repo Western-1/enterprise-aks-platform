@@ -1,0 +1,20 @@
+# Root application — created once manually, everything else is GitOps.
+# Watches infrastructure/argocd/ in the GitOps repo and creates every Application there.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-of-apps
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Western-1/enterprise-aks-gitops.git
+    targetRevision: main
+    path: infrastructure/argocd
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
