@@ -1,4 +1,4 @@
-﻿# Argo CD values — dev environment (bootstrap installation)
+# Argo CD values — dev environment (bootstrap installation)
 # Full chart: https://github.com/argoproj/argo-helm/tree/master/charts/argo-cd
 
 global:
@@ -6,7 +6,8 @@ global:
 
 server:
   service:
-    type: ClusterIP
+    type: LoadBalancer
+    externalTrafficPolicy: Local
   config:
     repositories: |
       - type: git

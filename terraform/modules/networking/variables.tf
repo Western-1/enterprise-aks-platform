@@ -1,4 +1,4 @@
-﻿variable "resource_group_name" {
+variable "resource_group_name" {
   description = "Name of the resource group"
   type        = string
 }
@@ -33,6 +33,12 @@ variable "private_dns_zones" {
     keyvault = "privatelink.vaultcore.azure.net"
     blob     = "privatelink.blob.core.windows.net"
   }
+}
+
+variable "lb_ingress_ports" {
+  description = "TCP ports allowed from the Internet to the AKS subnet (Azure Load Balancer frontends)"
+  type        = list(number)
+  default     = [80, 443]
 }
 
 variable "tags" {

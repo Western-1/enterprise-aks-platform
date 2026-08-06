@@ -1,4 +1,4 @@
-﻿terraform {
+terraform {
   required_version = ">= 1.8"
 
   required_providers {
@@ -43,6 +43,8 @@ module "networking" {
       address_prefixes = ["10.0.3.0/24"]
     }
   }
+
+  lb_ingress_ports = [80, 443]
 }
 
 module "acr" {
