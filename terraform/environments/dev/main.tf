@@ -100,3 +100,13 @@ module "aks" {
   acr_id                          = module.acr.acr_id
   log_analytics_workspace_id      = module.monitoring.workspace_id
 }
+
+module "identity" {
+  source = "../../modules/identity"
+
+  name                = "uami-media-dev-ne"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  oidc_issuer_url     = module.aks.aks_oidc_issuer_url
+  key_vault_id        = module.key_vault.key_vault_id
+}
