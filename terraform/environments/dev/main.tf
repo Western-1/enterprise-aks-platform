@@ -44,7 +44,7 @@ module "networking" {
     }
   }
 
-  lb_ingress_ports = [80, 443]
+  lb_ingress_ports = [80, 443, 8080]
 }
 
 module "acr" {
