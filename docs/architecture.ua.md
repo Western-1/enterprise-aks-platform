@@ -51,6 +51,27 @@
 
 Жоден пароль ніколи не з'являється в git-репозиторії чи Kubernetes-маніфесті.
 
+### PostgreSQL без пароля (Microsoft Entra ID)
+
+Демо-застосунок взагалі не використовує пароль із Key Vault. Натомість workload
+identity пода (`uami-media-dev-ne`, зареєстрований Entra-адміном сервера) отримує
+короткоживучий токен доступу й передає його як пароль PostgreSQL:
+
+```
+pod (service account media-api)
+  │  federated credential → workload identity (client-id 2308ae95-…)
+  ▼
+login.microsoftonline.com → токен для https://ossrdbms-aad.database.windows.net
+  │  (scope ossrdbms-aad — застарілий scope ossrdbms відхиляється з AADSTS500011)
+  ▼
+psql-dev-media-ne.postgres.database.azure.com як uami-media-dev-ne (ssl=require)
+```
+
+- Мережа: політика `default-deny` блокує все; `allow-db-egress` відкриває
+  `10.0.3.0/24:5432`, а `allow-aad-egress` — TCP 443 для токен-ендпоїнта.
+- Job `db-init` створює базу `media` тим самим identity до старту застосунку.
+- Key Vault досі тримає `db-password` / `db-url` як legacy-запас і вітрину CSI-драйвера.
+
 ### Топологія мережі
 
 ```
@@ -85,6 +106,8 @@ AKS-кластер сходиться (Sync/Healthy)
 
 - UI Argo CD відкритий через `LoadBalancer`-сервіс на frontend IP кластерного outbound LB
   (`externalTrafficPolicy: Local`, floating IP). Frontend IP коштує ~$3.5/міс.
+- Демо-API відкрито так само: `media-api-lb` на порту **8080**
+  (`http://4.245.138.35:8080/healthz`), другий frontend IP ~$3.5/міс.
 - `nsg-aks` дозволяє TCP 80/443 з Інтернету для frontend LB (`lb_ingress_ports`
   у модулі networking) — решта залишається закритою (zero-trust підхід).
 - Чому не `kubectl port-forward`: датаплейн Cilium на AKS перехоплює на IP нод лише
@@ -93,9 +116,7 @@ AKS-кластер сходиться (Sync/Healthy)
 
 ## Заплановано (наступні ітерації)
 
-- Argo CD + GitOps-репозиторій
-- `media-api` (FastAPI) + `media-worker` + Redis, деплой через Argo CD
-- HPA, PDB, NetworkPolicies, ResourceQuotas
+- PDB для демо-застосунку (HPA і NetworkPolicies вже live)
 - GitHub Actions CI/CD з Trivy, Helm lint, Checkov
 - Prometheus + Grafana + OpenTelemetry
 - Azure Front Door / Application Gateway перед ingress

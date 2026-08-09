@@ -22,10 +22,11 @@ unless the spending limit is explicitly removed.
 | AKS control plane | Free tier | $0 | | |
 | AKS system pool | 2× `Standard_EC2as_v5` | ~$184 / mo | | Confidential compute — the only VM family allowed by the trial subscription |
 | AKS user pool | `Standard_EC2as_v5`, 0–1 nodes (autoscaled) | $0–92 / mo | | $0 while idle |
-| PostgreSQL | `psql-dev-media-ne` (B1ms, 32 GB, PG16) | ~$20 / mo | | Private endpoint only; password in Key Vault |
+| PostgreSQL | `psql-dev-media-ne` (B1ms, 32 GB, PG16) | ~$20 / mo | | Private endpoint only; passwordless Entra ID auth (KV secrets kept as legacy) |
 | Public IP (Argo CD LB) | Standard static IP `kubernetes-*` in MC_ RG | ~$3.5 / mo | | One extra frontend on the existing outbound LB |
-| **Total, idle** | | **~$213 / mo** | | |
-| **Total, under load** | | **~$305 / mo** | | |
+| Public IP (media-api LB) | Standard static IP `kubernetes-*` in MC_ RG | ~$3.5 / mo | | Frontend for `media-api-lb` on port 8080 |
+| **Total, idle** | | **~$217 / mo** | | |
+| **Total, under load** | | **~$309 / mo** | | |
 
 ## Planned resources (not yet created)
 

@@ -122,3 +122,34 @@ argocd app get cluster-config       # details and resources
 1. Push manifests to `enterprise-aks-gitops` (e.g. `apps/media-api/`).
 2. Add an `Application` manifest to `enterprise-aks-gitops/infrastructure/argocd/`.
 3. Push. Argo CD syncs the new Application within a minute — **no kubectl apply needed**.
+
+## 9. Demo app end-to-end (media-api)
+
+```powershell
+# pods and the db-init job
+kubectl get pods -n media
+kubectl logs -n media job/db-init        # "database 'media' created"
+
+# in-cluster health (port-forward does not work on this cluster)
+kubectl exec deploy/media-api -n media -- python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/healthz').read().decode())"
+# {"status":"ok","db":true,"redis":true,"http":200}
+
+# public load balancer (port 8080, see terraform lb_ingress_ports)
+curl.exe http://4.245.138.35:8080/healthz
+curl.exe -X POST http://4.245.138.35:8080/media/items -H "Content-Type: application/json" -d "@item.json"
+curl.exe http://4.245.138.35:8080/media/items   # view_count grows — the worker processed the queue
+```
+
+Expected: `/healthz` is `ok` with `db` and `redis` true; POST returns 201 with an `id`;
+GET lists the item.
+
+### Troubleshooting the demo (lessons learned)
+
+| Symptom | Root cause | Fix |
+|---|---|---|
+| `ImagePullBackOff`, `Failed to authorize ... acr-credential-provider` | `AcrPull` was granted to the cluster system identity, but images are pulled by the agent-pool **kubelet identity** | `principal_id = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id` (modules/aks) |
+| `no pg_hba.conf entry ... no encryption` from asyncpg | Password URL was malformed (`@`, `&`, `#` unescaped) or the pod missed the `app: media` label for `allow-db-egress` | Alphanumeric password + `%40`-encoded username; label every DB-speaking pod |
+| Terraform/CLI change "succeeds" but server ignores it | Wrong REST property name (`authentication` instead of `authConfig`); password ops are async — poll the operation | Use `properties.authConfig`; poll `Azure-AsyncOperation` until `Succeeded` |
+| `AADSTS500011` for `https://ossrdbms.database.windows.net` | Flexible Server expects the **ossrdbms-aad** audience | Scope `https://ossrdbms-aad.database.windows.net/.default` |
+| Token exchange hangs in the pod | `default-deny` blocks egress to `login.microsoftonline.com:443` | `allow-aad-egress` NetworkPolicy (TCP 443); the Cilium FQDN variant did not take effect here |
+| Argo CD sync stuck on `Job ... field is immutable` | Job pod template changed | `kubectl delete job <name> -n media`, let Argo recreate it, then sync |
