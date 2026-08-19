@@ -166,10 +166,6 @@ Details: [docs/architecture.md](docs/architecture.md).
 
 *AKS cluster `aks-dev-cluster-ne` overview: Kubernetes 1.34, system and user node pools with autoscaling, Cilium networking.*
 
-![Argo CD UI](docs/screenshots/argocd-ui.png)
-
-*Argo CD UI (port-forwarded): the login page of the GitOps controller that watches the enterprise-aks-gitops repository.*
-
 ## Costs
 
 This is a trial subscription with **$200 free credits** — the card is never charged unless the

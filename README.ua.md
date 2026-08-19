@@ -166,10 +166,6 @@ az aks get-credentials --name aks-dev-cluster-ne --resource-group rg-dev-aks-ne
 
 *AKS-кластер `aks-dev-cluster-ne`: Kubernetes 1.34, system і user node pools з автоскейлінгом, мережа Cilium.*
 
-![Argo CD UI](docs/screenshots/argocd-ui.png)
-
-*Інтерфейс Argo CD (port-forward): сторінка входу GitOps-контролера, який стежить за репозиторієм enterprise-aks-gitops.*
-
 ## Витрати
 
 Це trial-підписка з **безкоштовними кредитами $200** — картка ніколи не списується, поки явно
