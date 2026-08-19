@@ -66,3 +66,23 @@ module "key_vault" {
   private_endpoint_subnet_id = module.networking.subnet_ids["private-endpoint"]
   private_dns_zone_id        = module.networking.private_dns_zone_ids["keyvault"]
 }
+
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  name                = "la-dev-aks-ne"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+}
+
+module "aks" {
+  source = "../../modules/aks"
+
+  name                            = "aks-dev-cluster-ne"
+  resource_group_name             = azurerm_resource_group.rg.name
+  location                        = azurerm_resource_group.rg.location
+  aks_subnet_id                   = module.networking.subnet_ids["aks"]
+  api_server_authorized_ip_ranges = ["31.134.118.200/32"]
+  acr_id                          = module.acr.acr_id
+  log_analytics_workspace_id      = module.monitoring.workspace_id
+}
