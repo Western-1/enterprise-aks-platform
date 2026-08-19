@@ -63,6 +63,7 @@ module "key_vault" {
   tenant_id                  = "e6b52a20-0ba0-4ffd-951d-183b04425ed2"
   current_user_object_id     = "6489c989-ee54-4e99-a2ad-f60a1acd493d"
   allow_public               = false
+  allowed_ip_ranges          = ["31.134.118.200/32"]
   private_endpoint_subnet_id = module.networking.subnet_ids["private-endpoint"]
   private_dns_zone_id        = module.networking.private_dns_zone_ids["keyvault"]
 }
@@ -73,6 +74,17 @@ module "monitoring" {
   name                = "la-dev-aks-ne"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
+}
+
+module "postgres" {
+  source = "../../modules/postgres"
+
+  name                       = "psql-dev-media-ne"
+  resource_group_name        = azurerm_resource_group.rg.name
+  location                   = azurerm_resource_group.rg.location
+  private_endpoint_subnet_id = module.networking.subnet_ids["private-endpoint"]
+  private_dns_zone_id        = module.networking.private_dns_zone_ids["postgres"]
+  key_vault_id               = module.key_vault.key_vault_id
 }
 
 module "aks" {

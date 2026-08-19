@@ -11,6 +11,7 @@ resource "azurerm_key_vault" "kv" {
   network_acls {
     default_action = var.allow_public ? "Allow" : "Deny"
     bypass         = "AzureServices"
+    ip_rules       = var.allowed_ip_ranges
   }
 
   tags = var.tags

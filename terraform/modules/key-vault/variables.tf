@@ -31,6 +31,12 @@ variable "allow_public" {
   default     = false
 }
 
+variable "allowed_ip_ranges" {
+  description = "Public IPs allowed through the firewall (for terraform/dev machine)"
+  type        = list(string)
+  default     = []
+}
+
 variable "private_endpoint_subnet_id" {
   type    = string
   default = null
