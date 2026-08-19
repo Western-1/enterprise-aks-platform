@@ -23,15 +23,16 @@ unless the spending limit is explicitly removed.
 | AKS system pool | 2× `Standard_EC2as_v5` | ~$184 / mo | | Confidential compute — the only VM family allowed by the trial subscription |
 | AKS user pool | `Standard_EC2as_v5`, 0–1 nodes (autoscaled) | $0–92 / mo | | $0 while idle |
 | PostgreSQL | `psql-dev-media-ne` (B1ms, 32 GB, PG16) | ~$20 / mo | | Private endpoint only; password in Key Vault |
-| **Total, idle** | | **~$210 / mo** | | |
-| **Total, under load** | | **~$302 / mo** | | |
+| Public IP (Argo CD LB) | Standard static IP `kubernetes-*` in MC_ RG | ~$3.5 / mo | | One extra frontend on the existing outbound LB |
+| **Total, idle** | | **~$213 / mo** | | |
+| **Total, under load** | | **~$305 / mo** | | |
 
 ## Planned resources (not yet created)
 
 | Resource | Configuration | Estimated cost | Notes |
 |---|---|---|---|
 | Redis (Azure Cache for Redis) | Basic C0 | ~$14 / mo | Optional — or run Redis as a pod in AKS |
-| Argo CD | In-cluster | $0 | Runs on existing nodes |
+| Argo CD | In-cluster | $0 | Runs on existing nodes; LB frontend IP costs ~$3.5/mo (see Current infrastructure) |
 | Prometheus + Grafana | In-cluster | $0 | Runs on existing nodes |
 
 ## How costs are measured

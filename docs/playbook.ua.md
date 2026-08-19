@@ -90,20 +90,32 @@ az acr show --name acrdevmedia --query "{loginServer:loginServer, sku:sku.name}"
 
 ## 8. Argo CD (GitOps)
 
+UI Argo CD публічний через Azure Load Balancer (Standard, frontend IP з кластерного
+outbound LB):
+
 ```powershell
-# UI в браузері (тримайте це вікно терміналу відкритим!)
-kubectl port-forward -n argocd svc/argocd-server 8080:443
-# відкрийте https://localhost:8080, логін: admin / початковий пароль із секрету нижче
+# відкрийте в браузері (admin / початковий пароль із секрету нижче)
+# URL: http://<frontend-ip>/ — отримайте його:
+kubectl get svc argocd-server -n argocd -o jsonpath="{.status.loadBalancer.ingress[0].ip}"
 
 # початковий пароль адміністратора
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
 
 # CLI (argocd.exe)
-argocd login localhost:8080 --username admin --password <пароль> --insecure
+argocd login <frontend-ip>:80 --username admin --password <пароль> --insecure
 argocd app list                     # застосунки та їхній sync-статус
 argocd app sync <app-name>          # примусова синхронізація
 argocd app get cluster-config       # деталі та ресурси
 ```
+
+> Примітка: сервер працює з `server.insecure: true` (чистий HTTP) для демо — у проду
+> Argo CD сам обслуговує TLS, зазвичай за ingress з SSO.
+>
+> Примітка: `kubectl port-forward` до Argo CD на цьому кластері не працює — датаплейн
+> Cilium відкидає трафік на порт сервісу на IP ноди (backend LB = порт сервісу з
+> floating IP; перехоплюється тільки nodePort). Підтримуваний шлях — LoadBalancer-сервіс.
+> NSG `nsg-aks` дозволяє 80/443 з Інтернету для frontend LB — для інших портів розширте
+> `lb_ingress_ports` у Terraform.
 
 ### Як додати новий застосунок у кластер
 

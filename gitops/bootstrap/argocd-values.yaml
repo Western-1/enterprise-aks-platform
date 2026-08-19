@@ -6,7 +6,8 @@ global:
 
 server:
   service:
-    type: ClusterIP
+    type: LoadBalancer
+    externalTrafficPolicy: Local
   config:
     repositories: |
       - type: git

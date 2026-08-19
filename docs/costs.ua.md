@@ -23,15 +23,16 @@ Azure Cost Management (`Cost analysis`) і оновлюються тут.
 | AKS system pool | 2× `Standard_EC2as_v5` | ~$184 / міс | | Confidential compute — єдина родина VM, яку дозволяє trial-підписка |
 | AKS user pool | `Standard_EC2as_v5`, 0–1 ноди (автоскейлінг) | $0–92 / міс | | $0 у простої |
 | PostgreSQL | `psql-dev-media-ne` (B1ms, 32 ГБ, PG16) | ~$20 / міс | | Тільки private endpoint; пароль у Key Vault |
-| **Разом, у простої** | | **~$210 / міс** | | |
-| **Разом, під навантаженням** | | **~$302 / міс** | | |
+| Публічний IP (LB Argo CD) | Standard static IP `kubernetes-*` у MC_ RG | ~$3.5 / міс | | Один додатковий frontend на наявному outbound LB |
+| **Разом, у простої** | | **~$213 / міс** | | |
+| **Разом, під навантаженням** | | **~$305 / міс** | | |
 
 ## Заплановані ресурси (ще не створені)
 
 | Ресурс | Конфігурація | Орієнтовна вартість | Нотатки |
 |---|---|---|---|
 | Redis (Azure Cache for Redis) | Basic C0 | ~$14 / міс | Опційно — або Redis подом у AKS |
-| Argo CD | In-cluster | $0 | Працює на наявних нодах |
+| Argo CD | In-cluster | $0 | Працює на наявних нодах; frontend IP LB коштує ~$3.5/міс (див. Поточну інфраструктуру) |
 | Prometheus + Grafana | In-cluster | $0 | Працює на наявних нодах |
 
 ## Як вимірюються витрати

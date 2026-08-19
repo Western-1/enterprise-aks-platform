@@ -101,6 +101,10 @@ git push → Argo CD (app-of-apps) → creates/clusters Applications → cluster
 Current apps managed by Argo CD: `cluster-config` (namespaces `media`, `database`,
 `monitoring`, `ingress` + ResourceQuota/LimitRange).
 
+![Argo CD applications](docs/screenshots/argocd-apps.png)
+
+*Argo CD UI: `app-of-apps` root application and `cluster-config` — both Synced and Healthy. The cluster converges from the enterprise-aks-gitops repository, no manual kubectl apply.*
+
 ## Repo layout
 
 ```

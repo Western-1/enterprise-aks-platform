@@ -24,6 +24,22 @@ resource "azurerm_network_security_group" "nsg" {
   tags = var.tags
 }
 
+resource "azurerm_network_security_rule" "lb_ingress" {
+  for_each = { for idx, port in var.lb_ingress_ports : port => idx }
+
+  name                        = "AllowLbInbound-${each.key}"
+  resource_group_name         = var.resource_group_name
+  network_security_group_name = azurerm_network_security_group.nsg["aks"].name
+  priority                    = 1000 + each.value * 10
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = tostring(each.key)
+  source_address_prefix       = "Internet"
+  destination_address_prefix  = "*"
+}
+
 resource "azurerm_subnet_network_security_group_association" "nsg_assoc" {
   for_each                  = var.subnets
   subnet_id                 = azurerm_subnet.subnet[each.key].id

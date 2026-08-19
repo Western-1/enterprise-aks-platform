@@ -81,6 +81,16 @@ AKS-кластер сходиться (Sync/Healthy)
   `monitoring`, `ingress`), `ResourceQuota`, `LimitRange`.
 - Нічого не застосовується через `kubectl apply` — Argo CD — єдиний, хто пише в кластер.
 
+### Зовнішній доступ (Azure Load Balancer)
+
+- UI Argo CD відкритий через `LoadBalancer`-сервіс на frontend IP кластерного outbound LB
+  (`externalTrafficPolicy: Local`, floating IP). Frontend IP коштує ~$3.5/міс.
+- `nsg-aks` дозволяє TCP 80/443 з Інтернету для frontend LB (`lb_ingress_ports`
+  у модулі networking) — решта залишається закритою (zero-trust підхід).
+- Чому не `kubectl port-forward`: датаплейн Cilium на AKS перехоплює на IP нод лише
+  діапазон nodePort, а правило Azure LB цілить у порт сервісу (floating IP).
+  Підтримуваний шлях — LoadBalancer-сервіс.
+
 ## Заплановано (наступні ітерації)
 
 - Argo CD + GitOps-репозиторій

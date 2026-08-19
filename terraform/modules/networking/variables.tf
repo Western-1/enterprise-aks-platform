@@ -35,6 +35,12 @@ variable "private_dns_zones" {
   }
 }
 
+variable "lb_ingress_ports" {
+  description = "TCP ports allowed from the Internet to the AKS subnet (Azure Load Balancer frontends)"
+  type        = list(number)
+  default     = [80, 443]
+}
+
 variable "tags" {
   description = "Tags applied to all resources"
   type        = map(string)

@@ -101,6 +101,10 @@ git push → Argo CD (app-of-apps) → створює/синхронізує App
 Поточні застосунки під управлінням Argo CD: `cluster-config` (namespace `media`, `database`,
 `monitoring`, `ingress` + ResourceQuota/LimitRange).
 
+![Argo CD applications](docs/screenshots/argocd-apps.png)
+
+*Інтерфейс Argo CD: кореневий застосунок `app-of-apps` і `cluster-config` — обидва Synced і Healthy. Кластер сходиться з репозиторію enterprise-aks-gitops, без ручного kubectl apply.*
+
 ## Структура репозиторію
 
 ```

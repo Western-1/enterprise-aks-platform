@@ -90,20 +90,32 @@ az acr show --name acrdevmedia --query "{loginServer:loginServer, sku:sku.name}"
 
 ## 8. Argo CD (GitOps)
 
+Argo CD UI is public via an Azure Load Balancer (Standard, frontend IP from the cluster
+outbound LB):
+
 ```powershell
-# UI in the browser (keep this terminal window open!)
-kubectl port-forward -n argocd svc/argocd-server 8080:443
-# open https://localhost:8080, login: admin / initial password from the secret below
+# open in the browser (admin / initial password from the secret below)
+# URL: http://<frontend-ip>/ — get it with:
+kubectl get svc argocd-server -n argocd -o jsonpath="{.status.loadBalancer.ingress[0].ip}"
 
 # initial admin password
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
 
 # CLI (argocd.exe)
-argocd login localhost:8080 --username admin --password <password> --insecure
+argocd login <frontend-ip>:80 --username admin --password <password> --insecure
 argocd app list                     # applications and their sync status
 argocd app sync <app-name>          # force sync
 argocd app get cluster-config       # details and resources
 ```
+
+> Note: the server runs with `server.insecure: true` (plain HTTP) for the demo — Argo CD
+> serves TLS itself in production setups, usually behind an ingress with SSO.
+>
+> Note: `kubectl port-forward` to Argo CD does not work on this cluster — the Cilium
+> datapath refuses traffic to the service port on node IPs (LB backend port = service port
+> with floating IP; only nodePort is intercepted). The LoadBalancer service is the
+> supported way in. The NSG `nsg-aks` allows 80/443 from the Internet for LB frontends —
+> extend `lb_ingress_ports` in Terraform for other ports.
 
 ### How to add a new app to the cluster
 
