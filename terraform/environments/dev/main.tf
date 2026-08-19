@@ -44,3 +44,12 @@ module "networking" {
     }
   }
 }
+
+module "acr" {
+  source = "../../modules/acr"
+
+  name                = "acrdevmedia"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  sku                 = "Basic"
+}
