@@ -63,6 +63,24 @@ Private DNS зони: privatelink.vaultcore.azure.net, privatelink.postgres.data
 
 Key Vault і PostgreSQL доступні **лише** через private endpoints — без публічних IP.
 
+## GitOps-доставка
+
+```
+developer: git push
+     │
+     ▼
+репозиторій enterprise-aks-gitops (єдине джерело істини)
+     │  Argo CD опитує (app-of-apps)
+     ▼
+AKS-кластер сходиться (Sync/Healthy)
+```
+
+- **Кореневий застосунок** `app-of-apps` стежить за `infrastructure/argocd/` у GitOps-репо
+  і створює кожен `Application`, оголошений там.
+- **cluster-config** застосовує маніфести рівня кластера: namespace (`media`, `database`,
+  `monitoring`, `ingress`), `ResourceQuota`, `LimitRange`.
+- Нічого не застосовується через `kubectl apply` — Argo CD — єдиний, хто пише в кластер.
+
 ## Заплановано (наступні ітерації)
 
 - Argo CD + GitOps-репозиторій

@@ -87,3 +87,26 @@ az acr show --name acrdevmedia --query "{loginServer:loginServer, sku:sku.name}"
 # in the portal: Cost Management + Billing → Cost analysis → filter rg-dev-aks-ne
 # update docs/costs.md and docs/costs.ua.md afterwards
 ```
+
+## 8. Argo CD (GitOps)
+
+```powershell
+# UI in the browser (keep this terminal window open!)
+kubectl port-forward -n argocd svc/argocd-server 8080:443
+# open https://localhost:8080, login: admin / initial password from the secret below
+
+# initial admin password
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+
+# CLI (argocd.exe)
+argocd login localhost:8080 --username admin --password <password> --insecure
+argocd app list                     # applications and their sync status
+argocd app sync <app-name>          # force sync
+argocd app get cluster-config       # details and resources
+```
+
+### How to add a new app to the cluster
+
+1. Push manifests to `enterprise-aks-gitops` (e.g. `apps/media-api/`).
+2. Add an `Application` manifest to `enterprise-aks-gitops/infrastructure/argocd/`.
+3. Push. Argo CD syncs the new Application within a minute — **no kubectl apply needed**.

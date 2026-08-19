@@ -32,7 +32,7 @@ The result is a single artifact you can show at an interview and defend:
 | PostgreSQL (private endpoint, password in KV) | ✅ live |
 | AKS 1.34 (Cilium, OIDC, Workload Identity, CSI) | ✅ live |
 | Log Analytics / Azure Monitor | ✅ live |
-| GitOps (Argo CD) | 📋 next |
+| GitOps (Argo CD) | ✅ live — app-of-apps + cluster-config Synced |
 | Demo application (FastAPI) | 📋 next |
 | CI/CD (GitHub Actions) | 📋 next |
 | Prometheus + Grafana | 📋 next |
@@ -87,6 +87,19 @@ The result is a single artifact you can show at an interview and defend:
 ```
 
 Full diagram and details: [docs/architecture.md](docs/architecture.md).
+
+## GitOps in action
+
+Everything inside the cluster is declared in the
+[enterprise-aks-gitops](https://github.com/Western-1/enterprise-aks-gitops) repository.
+Argo CD watches it and makes the cluster match it — nobody applies manifests by hand:
+
+```
+git push → Argo CD (app-of-apps) → creates/clusters Applications → cluster converges
+```
+
+Current apps managed by Argo CD: `cluster-config` (namespaces `media`, `database`,
+`monitoring`, `ingress` + ResourceQuota/LimitRange).
 
 ## Repo layout
 
@@ -152,6 +165,10 @@ Details: [docs/architecture.md](docs/architecture.md).
 ![AKS cluster overview](docs/screenshots/aks-overview.png)
 
 *AKS cluster `aks-dev-cluster-ne` overview: Kubernetes 1.34, system and user node pools with autoscaling, Cilium networking.*
+
+![Argo CD UI](docs/screenshots/argocd-ui.png)
+
+*Argo CD UI (port-forwarded): the login page of the GitOps controller that watches the enterprise-aks-gitops repository.*
 
 ## Costs
 

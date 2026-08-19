@@ -87,3 +87,26 @@ az acr show --name acrdevmedia --query "{loginServer:loginServer, sku:sku.name}"
 # у порталі: Cost Management + Billing → Cost analysis → фільтр rg-dev-aks-ne
 # після цього оновіть docs/costs.md і docs/costs.ua.md
 ```
+
+## 8. Argo CD (GitOps)
+
+```powershell
+# UI в браузері (тримайте це вікно терміналу відкритим!)
+kubectl port-forward -n argocd svc/argocd-server 8080:443
+# відкрийте https://localhost:8080, логін: admin / початковий пароль із секрету нижче
+
+# початковий пароль адміністратора
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+
+# CLI (argocd.exe)
+argocd login localhost:8080 --username admin --password <пароль> --insecure
+argocd app list                     # застосунки та їхній sync-статус
+argocd app sync <app-name>          # примусова синхронізація
+argocd app get cluster-config       # деталі та ресурси
+```
+
+### Як додати новий застосунок у кластер
+
+1. Запуште маніфести в `enterprise-aks-gitops` (наприклад, `apps/media-api/`).
+2. Додайте маніфест `Application` у `enterprise-aks-gitops/infrastructure/argocd/`.
+3. Пуш. Argo CD синхронізує новий застосунок протягом хвилини — **kubectl apply не потрібен**.

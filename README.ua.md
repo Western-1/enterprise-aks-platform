@@ -32,7 +32,7 @@ Production-рівень Kubernetes-платформа в Azure, побудова
 | PostgreSQL (private endpoint, пароль у KV) | ✅ live |
 | AKS 1.34 (Cilium, OIDC, Workload Identity, CSI) | ✅ live |
 | Log Analytics / Azure Monitor | ✅ live |
-| GitOps (Argo CD) | 📋 наступне |
+| GitOps (Argo CD) | ✅ live — app-of-apps + cluster-config Synced |
 | Демо-застосунок (FastAPI) | 📋 наступне |
 | CI/CD (GitHub Actions) | 📋 наступне |
 | Prometheus + Grafana | 📋 наступне |
@@ -87,6 +87,19 @@ Production-рівень Kubernetes-платформа в Azure, побудова
 ```
 
 Повна діаграма й деталі: [docs/architecture.ua.md](docs/architecture.ua.md).
+
+## GitOps на практиці
+
+Усе всередині кластера описано в репозиторії
+[enterprise-aks-gitops](https://github.com/Western-1/enterprise-aks-gitops).
+Argo CD стежить за ним і приводить кластер у відповідність — ніхто не застосовує маніфести вручну:
+
+```
+git push → Argo CD (app-of-apps) → створює/синхронізує Applications → кластер сходиться
+```
+
+Поточні застосунки під управлінням Argo CD: `cluster-config` (namespace `media`, `database`,
+`monitoring`, `ingress` + ResourceQuota/LimitRange).
 
 ## Структура репозиторію
 
@@ -152,6 +165,10 @@ az aks get-credentials --name aks-dev-cluster-ne --resource-group rg-dev-aks-ne
 ![AKS cluster overview](docs/screenshots/aks-overview.png)
 
 *AKS-кластер `aks-dev-cluster-ne`: Kubernetes 1.34, system і user node pools з автоскейлінгом, мережа Cilium.*
+
+![Argo CD UI](docs/screenshots/argocd-ui.png)
+
+*Інтерфейс Argo CD (port-forward): сторінка входу GitOps-контролера, який стежить за репозиторієм enterprise-aks-gitops.*
 
 ## Витрати
 
