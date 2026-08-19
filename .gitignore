@@ -1,0 +1,38 @@
+# AI agent instructions — never commit
+AGENTS.md
+.opencode/
+
+# IDE
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+kubeconfig
+*.kubeconfig
+
+# Docker
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
