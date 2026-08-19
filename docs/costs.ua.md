@@ -22,14 +22,17 @@ Azure Cost Management (`Cost analysis`) і оновлюються тут.
 | AKS control plane | Free tier | $0 | | |
 | AKS system pool | 2× `Standard_EC2as_v5` | ~$184 / міс | | Confidential compute — єдина родина VM, яку дозволяє trial-підписка |
 | AKS user pool | `Standard_EC2as_v5`, 0–1 ноди (автоскейлінг) | $0–92 / міс | | $0 у простої |
-| **Разом, у простої** | | **~$190 / міс** | | |
-| **Разом, під навантаженням** | | **~$282 / міс** | | |
+| PostgreSQL | `psql-dev-media-ne` (B1ms, 32 ГБ, PG16) | ~$20 / міс | | Тільки private endpoint; пароль у Key Vault |
+| **Разом, у простої** | | **~$210 / міс** | | |
+| **Разом, під навантаженням** | | **~$302 / міс** | | |
 
 ## Заплановані ресурси (ще не створені)
 
 | Ресурс | Конфігурація | Орієнтовна вартість | Нотатки |
 |---|---|---|---|
-| PostgreSQL Flexible Server | Basic `B1ms`, 32 ГБ | ~$16 / міс | Тільки якщо застосунку потрібна БД у dev |
+| Redis (Azure Cache for Redis) | Basic C0 | ~$14 / міс | Опційно — або Redis подом у AKS |
+| Argo CD | In-cluster | $0 | Працює на наявних нодах |
+| Prometheus + Grafana | In-cluster | $0 | Працює на наявних нодах |
 
 ## Як вимірюються витрати
 

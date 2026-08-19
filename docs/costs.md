@@ -22,14 +22,17 @@ unless the spending limit is explicitly removed.
 | AKS control plane | Free tier | $0 | | |
 | AKS system pool | 2× `Standard_EC2as_v5` | ~$184 / mo | | Confidential compute — the only VM family allowed by the trial subscription |
 | AKS user pool | `Standard_EC2as_v5`, 0–1 nodes (autoscaled) | $0–92 / mo | | $0 while idle |
-| **Total, idle** | | **~$190 / mo** | | |
-| **Total, under load** | | **~$282 / mo** | | |
+| PostgreSQL | `psql-dev-media-ne` (B1ms, 32 GB, PG16) | ~$20 / mo | | Private endpoint only; password in Key Vault |
+| **Total, idle** | | **~$210 / mo** | | |
+| **Total, under load** | | **~$302 / mo** | | |
 
 ## Planned resources (not yet created)
 
 | Resource | Configuration | Estimated cost | Notes |
 |---|---|---|---|
-| PostgreSQL Flexible Server | Basic `B1ms`, 32 GB | ~$16 / mo | Only if the app needs it in dev |
+| Redis (Azure Cache for Redis) | Basic C0 | ~$14 / mo | Optional — or run Redis as a pod in AKS |
+| Argo CD | In-cluster | $0 | Runs on existing nodes |
+| Prometheus + Grafana | In-cluster | $0 | Runs on existing nodes |
 
 ## How costs are measured
 
