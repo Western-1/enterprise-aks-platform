@@ -22,6 +22,8 @@ venv/
 *.tfvars
 *.tfvars.json
 !*.tfvars.example
+tfplan
+*.plan
 
 # Secrets / env
 .env
