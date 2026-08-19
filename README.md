@@ -143,6 +143,16 @@ The full command reference with expected output is in [docs/playbook.md](docs/pl
 
 Details: [docs/architecture.md](docs/architecture.md).
 
+## Screenshots
+
+![Resource group overview](docs/screenshots/azure-rg-overview.png)
+
+*Resource group `rg-dev-aks-ne` in the Azure portal: VNet, ACR, Key Vault, PostgreSQL, AKS and Log Analytics are all provisioned by Terraform.*
+
+![AKS cluster overview](docs/screenshots/aks-overview.png)
+
+*AKS cluster `aks-dev-cluster-ne` overview: Kubernetes 1.34, system and user node pools with autoscaling, Cilium networking.*
+
 ## Costs
 
 This is a trial subscription with **$200 free credits** — the card is never charged unless the

@@ -143,6 +143,16 @@ az aks get-credentials --name aks-dev-cluster-ne --resource-group rg-dev-aks-ne
 
 Деталі: [docs/architecture.ua.md](docs/architecture.ua.md).
 
+## Скріншоти
+
+![Resource group overview](docs/screenshots/azure-rg-overview.png)
+
+*Resource group `rg-dev-aks-ne` в Azure-порталі: VNet, ACR, Key Vault, PostgreSQL, AKS і Log Analytics — усе піднято Terraform.*
+
+![AKS cluster overview](docs/screenshots/aks-overview.png)
+
+*AKS-кластер `aks-dev-cluster-ne`: Kubernetes 1.34, system і user node pools з автоскейлінгом, мережа Cilium.*
+
 ## Витрати
 
 Це trial-підписка з **безкоштовними кредитами $200** — картка ніколи не списується, поки явно
