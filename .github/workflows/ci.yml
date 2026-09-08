@@ -98,7 +98,7 @@ jobs:
         with:
           image-ref: media-api:ci
           format: sarif
-          output: trivy-results.sarif
+          output: apps/media-api/trivy-results.sarif
           severity: CRITICAL,HIGH
 
       - name: Upload SARIF
