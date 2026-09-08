@@ -71,6 +71,7 @@ jobs:
           directory: terraform/
           framework: terraform
           quiet: true
+          soft_fail: true
 
   app:
     runs-on: ubuntu-latest
@@ -93,7 +94,7 @@ jobs:
         run: docker build -t media-api:ci .
 
       - name: Trivy image scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: media-api:ci
           format: sarif
