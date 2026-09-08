@@ -9,6 +9,7 @@ from .metrics import render as render_metrics
 from .models import Base
 from .redis_client import get_redis
 from .routers import items
+from .tracing import init_tracing
 
 
 @asynccontextmanager
@@ -24,6 +25,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="media-api", version="1.2.1", lifespan=lifespan)
 
 app.include_router(items.router)
+
+tracing_enabled = init_tracing(app)
 
 
 @app.get("/healthz", tags=["health"])
