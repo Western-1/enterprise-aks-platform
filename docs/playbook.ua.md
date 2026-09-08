@@ -153,3 +153,21 @@ GET показує елемент.
 | `AADSTS500011` для `https://ossrdbms.database.windows.net` | Flexible Server чекає audience **ossrdbms-aad** | Scope `https://ossrdbms-aad.database.windows.net/.default` |
 | Обмін токена висить у поді | `default-deny` блокує egress до `login.microsoftonline.com:443` | NetworkPolicy `allow-aad-egress` (TCP 443); варіант Cilium FQDN тут не спрацював |
 | Синк Argo CD застряг на `Job ... field is immutable` | Змінився pod template job | `kubectl delete job <name> -n media`, Argo перестворить, потім sync |
+
+## 10. CI/CD (GitHub Actions, OIDC, без секретів)
+
+- `ci.yml` (PR + main): `terraform fmt/validate/plan` (remote state), Checkov,
+  pytest на Python 3.12, збірка docker, Trivy-скан образу.
+- `cd.yml` (main): збирає й пушить у ACR образ із тегом `sha-<short>`.
+  Argo CD деплоїть лише піновані теги, тож публікація нічого сама не деплоїть.
+- Автентикація — OIDC: app registration `github-actions-oidc` з federated
+  credentials для `ref:refs/heads/main` і `pull_request` (увага: GitHub шле
+  subject із суфіксами `@owner-id/@repo-id` — у разі помилки AADSTS700213
+  скопіюй subject дослівно з тексту помилки). Ролі (мінімальні): Reader на
+  підписку, AcrPush на ACR, Storage Blob Data Contributor на state-сховище,
+  AKS Cluster User на кластер, Key Vault Secrets User на сховище.
+- CI-план іде з `-refresh=false`: firewall Key Vault (за дизайном) блокує
+  data plane ранера; refresh відбувається на apply.
+- State Terraform лежить у `sttfaksdevne02/tfstate` (забутстраплено разово, поза
+  Terraform). Змінні репо (не секрети): `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
+  `AZURE_SUBSCRIPTION_ID`, `TF_VAR_current_user_object_id`, `TF_VAR_home_ip`.

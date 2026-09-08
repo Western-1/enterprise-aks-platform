@@ -34,7 +34,7 @@ Production-рівень Kubernetes-платформа в Azure, побудова
 | Log Analytics / Azure Monitor | ✅ live |
 | GitOps (Argo CD) | ✅ live — app-of-apps + cluster-config Synced |
 | Демо-застосунок (FastAPI) | ✅ live — http://4.245.138.35:8080/healthz |
-| CI/CD (GitHub Actions) | 📋 наступне |
+| CI/CD (GitHub Actions) | ✅ live — OIDC, без секретів |
 | Prometheus + Grafana | 📋 наступне |
 
 ## Архітектура (спрощено)

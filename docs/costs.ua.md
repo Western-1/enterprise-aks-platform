@@ -25,8 +25,9 @@ Azure Cost Management (`Cost analysis`) і оновлюються тут.
 | PostgreSQL | `psql-dev-media-ne` (B1ms, 32 ГБ, PG16) | ~$20 / міс | | Тільки private endpoint; вхід без пароля через Entra ID (секрети KV — legacy) |
 | Публічний IP (LB Argo CD) | Standard static IP `kubernetes-*` у MC_ RG | ~$3.5 / міс | | Один додатковий frontend на наявному outbound LB |
 | Публічний IP (LB media-api) | Standard static IP `kubernetes-*` у MC_ RG | ~$3.5 / міс | | Frontend для `media-api-lb` на порту 8080 |
-| **Разом, у простої** | | **~$217 / міс** | | |
-| **Разом, під навантаженням** | | **~$309 / міс** | | |
+| Сховище (Terraform state) | `sttfaksdevne02` (Standard_LRS) | ~$1 / міс | | Крихітний state-блоб; забутстраплено поза Terraform |
+| **Разом, у простої** | | **~$218 / міс** | | |
+| **Разом, під навантаженням** | | **~$310 / міс** | | |
 
 ## Заплановані ресурси (ще не створені)
 

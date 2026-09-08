@@ -7,6 +7,16 @@ terraform {
       version = "~> 4.0"
     }
   }
+
+  # Remote state (storage account bootstrapped once, outside Terraform).
+  # Auth: local `az login` or GitHub Actions OIDC via azure/login (no secrets).
+  backend "azurerm" {
+    resource_group_name  = "rg-dev-aks-ne"
+    storage_account_name = "sttfaksdevne02"
+    container_name       = "tfstate"
+    key                  = "dev.terraform.tfstate"
+    use_azuread_auth     = true
+  }
 }
 
 provider "azurerm" {

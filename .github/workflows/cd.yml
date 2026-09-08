@@ -1,0 +1,40 @@
+name: cd
+
+# Builds and publishes the demo image on every merge to main.
+# The tag is the commit SHA on purpose: Argo CD deploys only tags pinned
+# in enterprise-aks-gitops, so publishing never auto-deploys.
+# Follow-up: automation that bumps the tag in the GitOps repo.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/media-api/**"
+      - ".github/workflows/cd.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login (OIDC, no secrets)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to ACR
+        run: az acr login --name acrdevmedia
+
+      - name: Build and push
+        run: |
+          TAG="sha-${GITHUB_SHA::7}"
+          docker build -t acrdevmedia.azurecr.io/media-api:$TAG apps/media-api
+          docker push acrdevmedia.azurecr.io/media-api:$TAG
+          echo "Published acrdevmedia.azurecr.io/media-api:$TAG"
