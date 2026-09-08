@@ -53,7 +53,10 @@ jobs:
         run: terraform validate
 
       - name: plan
-        run: terraform plan -input=false -lock=false
+        # -refresh=false: the Key Vault firewall (by design) blocks the
+        # runner data plane; secret values are config-derived, so a
+        # no-refresh plan is exact. Refresh happens on apply.
+        run: terraform plan -input=false -lock=false -refresh=false
         env:
           TF_VAR_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           TF_VAR_tenant_id: ${{ vars.AZURE_TENANT_ID }}
