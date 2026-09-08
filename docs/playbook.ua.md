@@ -52,8 +52,12 @@ kubectl get pods -A
 az keyvault secret list --vault-name kv-dev-media-ne --query "[].name" --output table
 ```
 
-Пароль PostgreSQL і connection string Terraform пише автоматично
-(`db-password`, `db-url`) — ніколи не кладіть їх у файли, що потрапляють у git.
+Секрети в Key Vault створює Terraform — ніколи не кладіть їх у файли,
+що потрапляють у git.
+
+> Сховище зараз навмисно порожнє: застосунок входить без пароля (Entra ID),
+> тож legacy-секрети `db-password` / `db-url` видалено. Admin-пароль існує
+> лише в Terraform state (break-glass).
 
 ## 5. Масштабування / зупинка / запуск кластера (економія)
 

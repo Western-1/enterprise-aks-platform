@@ -71,7 +71,9 @@ psql-dev-media-ne.postgres.database.azure.com as uami-media-dev-ne (ssl=require)
 - Network: the `default-deny` policy blocks everything; `allow-db-egress` opens
   `10.0.3.0/24:5432` and `allow-aad-egress` opens TCP 443 for the token endpoint.
 - The `db-init` job creates the `media` database with the same identity before the app starts.
-- Key Vault still holds `db-password` / `db-url` as a legacy fallback and as the CSI-driver showcase.
+- No passwords anywhere: the legacy Key Vault secrets (`db-password` / `db-url`)
+  and the CSI driver mounts were deleted — the random admin password exists only
+  because Azure requires it at server creation (break-glass via Terraform state).
 
 ### Network topology
 

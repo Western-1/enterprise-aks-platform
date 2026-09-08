@@ -52,8 +52,9 @@ Expected: two `system` nodes `Ready`, and system pods (cilium, gatekeeper,
 az keyvault secret list --vault-name kv-dev-media-ne --query "[].name" --output table
 ```
 
-The PostgreSQL password and connection string are written automatically by
-Terraform (`db-password`, `db-url`) — never put them in files that reach git.
+> The vault is currently empty on purpose: the app authenticates passwordless
+> (Entra ID), so the legacy `db-password` / `db-url` secrets were deleted.
+> The admin password exists only in Terraform state (break-glass).
 
 ## 5. Scale / stop / start the cluster (saving money)
 
@@ -142,6 +143,11 @@ curl.exe http://4.245.138.35:8080/media/items   # view_count grows — the worke
 
 Expected: `/healthz` is `ok` with `db` and `redis` true; POST returns 201 with an `id`;
 GET lists the item.
+
+```powershell
+# availability guard: at least one API pod survives voluntary disruptions
+kubectl get pdb -n media
+```
 
 ### Troubleshooting the demo (lessons learned)
 
