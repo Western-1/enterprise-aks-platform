@@ -97,6 +97,10 @@ Key Vault and PostgreSQL are reachable **only** through private endpoints — no
 - `media-api` exposes `/metrics` (`media_items_created_total` counter) and a
   `ServiceMonitor` feeds it to Prometheus — verified end to end.
 - Grafana stays private (no extra LB frontend): check from inside the cluster.
+- Tempo 1.24 (single binary, 5Gi PVC) + OTel collector (deployment) in the same
+  namespace: `media-api` exports FastAPI + asyncpg spans over OTLP/HTTP
+  (`OTEL_EXPORTER_OTLP_ENDPOINT`, allowed by the `allow-otlp-egress` policy),
+  the collector batches them into Tempo; Grafana has Tempo as a datasource.
 - Two Argo CD lessons from this rollout: the prometheus-operator CRDs exceed the
   256KB annotation limit under client-side apply → `ServerSideApply=true`;
   Argo 2.14 client schema does not know `.status.terminatingReplicas` (newer K8s)

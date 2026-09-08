@@ -189,6 +189,10 @@ az aks get-credentials --name aks-dev-cluster-ne --resource-group rg-dev-aks-ne
 
 *`media_items_created_total`, зібрана з `media-api` через ServiceMonitor — весь шлях (застосунок → /metrics → Prometheus) перевірено.*
 
+![Трейси в Tempo](docs/screenshots/tempo-traces.png)
+
+*Спани `media-api` (`GET /healthz`, asyncpg `BEGIN`/`COMMIT`), експортовані через OTLP крізь колектор у Tempo — трейси перевірено через Tempo search API.*
+
 ## Витрати
 
 Це trial-підписка з **безкоштовними кредитами $200** — картка ніколи не списується, поки явно

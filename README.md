@@ -190,6 +190,10 @@ Details: [docs/architecture.md](docs/architecture.md).
 
 *`media_items_created_total` scraped from `media-api` through the ServiceMonitor — the whole path (app → /metrics → Prometheus) verified.*
 
+![Traces in Tempo](docs/screenshots/tempo-traces.png)
+
+*`media-api` spans (`GET /healthz`, asyncpg `BEGIN`/`COMMIT`) exported over OTLP through the collector into Tempo — traces verified via the Tempo search API.*
+
 ## Costs
 
 This is a trial subscription with **$200 free credits** — the card is never charged unless the
