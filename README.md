@@ -185,7 +185,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 ## Costs
 
 This is a trial subscription with **$200 free credits** — the card is never charged unless the
-spending limit is explicitly removed. Current running infrastructure costs **~$217/month**,
+spending limit is explicitly removed. Current running infrastructure costs **~$218/month**,
 which is why the cluster is started only when working. Full table: [docs/costs.md](docs/costs.md).
 
 ## Documentation index
