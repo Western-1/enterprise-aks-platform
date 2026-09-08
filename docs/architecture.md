@@ -135,6 +135,5 @@ AKS cluster converges (Sync/Healthy)
 ## Planned (next iterations)
 
 - PDB for the demo app (HPA and NetworkPolicies are already live)
-- Automatic image-tag bump in the GitOps repo on merge (CI + sha-tagged publish are live)
 - OpenTelemetry collector in front of Prometheus
 - Azure Front Door / Application Gateway in front of ingress

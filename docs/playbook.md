@@ -164,8 +164,14 @@ kubectl get pdb -n media
 
 - `ci.yml` (PR + main): `terraform fmt/validate/plan` (remote state), Checkov,
   pytest on Python 3.12, docker build, Trivy image scan.
-- `cd.yml` (main): builds and pushes a `sha-<short>` image tag to ACR.
-  Argo CD deploys only pinned tags, so publishing never auto-deploys.
+- `cd.yml` (main): builds and pushes a `sha-<short>` image tag to ACR, then bumps
+  the tag in `apps/media` manifests in enterprise-aks-gitops (commit by
+  `github-actions[bot]`) so Argo CD deploys it — full loop verified.
+  Needs the `GITOPS_PAT` secret (classic PAT with `repo` scope, or fine-grained
+  with Contents write on the GitOps repo); without it the step warns and skips.
+- The `db-init` Job carries `Replace=true`: Job pod templates are immutable,
+  so Argo deletes and recreates it on tag bumps instead of failing the sync
+  (the bootstrap script is idempotent).
 - Auth is OIDC: app registration `github-actions-oidc` with federated
   credentials for `ref:refs/heads/main` and `pull_request` (note: GitHub sends
   the subject with `@owner-id/@repo-id` suffixes — copy it verbatim from the

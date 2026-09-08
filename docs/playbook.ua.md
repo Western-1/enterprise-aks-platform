@@ -162,8 +162,14 @@ GET показує елемент.
 
 - `ci.yml` (PR + main): `terraform fmt/validate/plan` (remote state), Checkov,
   pytest на Python 3.12, збірка docker, Trivy-скан образу.
-- `cd.yml` (main): збирає й пушить у ACR образ із тегом `sha-<short>`.
-  Argo CD деплоїть лише піновані теги, тож публікація нічого сама не деплоїть.
+- `cd.yml` (main): збирає й пушить у ACR образ із тегом `sha-<short>`, потім піднімає
+  тег у маніфестах `apps/media` в enterprise-aks-gitops (коміт від
+  `github-actions[bot]`), щоб Argo CD задеплоїв, — повний цикл перевірено.
+  Потрібен секрет `GITOPS_PAT` (класик-PAT зі scope `repo` або fine-grained
+  із Contents write на GitOps-репо); без нього крок варнить і скіпає.
+- Job `db-init` має `Replace=true`: pod template у Job незмінний, тож Argo
+  видаляє й перестворює його на bump тега замість падіння синку
+  (bootstrap-скрипт ідемпотентний).
 - Автентикація — OIDC: app registration `github-actions-oidc` з federated
   credentials для `ref:refs/heads/main` і `pull_request` (увага: GitHub шле
   subject із суфіксами `@owner-id/@repo-id` — у разі помилки AADSTS700213
