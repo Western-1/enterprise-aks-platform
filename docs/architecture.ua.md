@@ -96,6 +96,10 @@ Key Vault і PostgreSQL доступні **лише** через private endpoin
 - `media-api` віддає `/metrics` (лічильник `media_items_created_total`), а
   `ServiceMonitor` згодовує їх Prometheus — перевірено end-to-end.
 - Grafana приватна (без зайвого LB-frontend): перевіряти зсередини кластера.
+- Tempo 1.24 (single binary, PVC 5Gi) + OTel-колектор (deployment) у тому самому
+  неймспейсі: `media-api` експортує FastAPI- й asyncpg-спани через OTLP/HTTP
+  (`OTEL_EXPORTER_OTLP_ENDPOINT`, дозволено політикою `allow-otlp-egress`),
+  колектор батчить їх у Tempo; у Grafana Tempo підключено як datasource.
 - Два уроки Argo CD з цього rollout: CRD prometheus-operator перевищують ліміт
   анотацій 256KB при client-side apply → `ServerSideApply=true`; клієнтська схема
   Argo 2.14 не знає `.status.terminatingReplicas` (новіший K8s) → server-side diff

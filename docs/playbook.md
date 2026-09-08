@@ -206,3 +206,16 @@ Expected: all monitoring pods Running, Prometheus `1` desired/ready,
 
 > Grafana has no public endpoint on purpose (no extra ~$3.5/mo frontend):
 > verify through the Prometheus API from inside the cluster.
+
+```powershell
+# traces: generate traffic, then search Tempo from a pod in monitoring
+curl.exe -X POST http://4.245.138.35:8080/media/items -H "Content-Type: application/json" -d "@item.json"
+kubectl run tempoq --image=nicolaka/netshoot --restart=Never -n monitoring -- sleep 300
+kubectl exec tempoq -n monitoring -- curl -s "http://tempo.monitoring:3200/api/search?limit=5"
+# {"traces":[{"traceID":"...","rootServiceName":"media-api","rootTraceName":"GET /healthz",...}, ...]}
+kubectl delete pod tempoq -n monitoring
+```
+
+> The collector chart 0.172+ requires `image.repository` explicitly
+> (`otel/opentelemetry-collector-contrib`); the tempo Service exposes OTLP
+> only for receivers with an `endpoint` set (`0.0.0.0:4317` / `:4318`).

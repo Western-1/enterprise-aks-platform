@@ -204,3 +204,16 @@ curl "http://monitoring-kube-prometheus-prometheus.monitoring:9090/api/v1/query?
 
 > У Grafana навмисно немає публічного ендпоїнта (зайві ~$3.5/міс за frontend):
 > перевіряти через Prometheus API зсередини кластера.
+
+```powershell
+# трейси: згенерувати трафік, потім пошукати в Tempo з пода в monitoring
+curl.exe -X POST http://4.245.138.35:8080/media/items -H "Content-Type: application/json" -d "@item.json"
+kubectl run tempoq --image=nicolaka/netshoot --restart=Never -n monitoring -- sleep 300
+kubectl exec tempoq -n monitoring -- curl -s "http://tempo.monitoring:3200/api/search?limit=5"
+# {"traces":[{"traceID":"...","rootServiceName":"media-api","rootTraceName":"GET /healthz",...}, ...]}
+kubectl delete pod tempoq -n monitoring
+```
+
+> Чарт колектора 0.172+ вимагає явний `image.repository`
+> (`otel/opentelemetry-collector-contrib`); Service tempo віддає OTLP лише для
+> receivers із заданим `endpoint` (`0.0.0.0:4317` / `:4318`).
