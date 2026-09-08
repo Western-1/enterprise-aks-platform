@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 
 from sqlalchemy import text
 
 from .db import engine
+from .metrics import render as render_metrics
 from .models import Base
 from .redis_client import get_redis
 from .routers import items
@@ -41,3 +42,9 @@ async def healthz():
 
     status_code = 200 if db_ok and redis_ok else 503
     return {"status": "ok" if status_code == 200 else "degraded", "db": db_ok, "redis": redis_ok, "http": 200}
+
+
+@app.get("/metrics", tags=["monitoring"])
+async def metrics():
+    payload, content_type = render_metrics()
+    return Response(content=payload, media_type=content_type)
