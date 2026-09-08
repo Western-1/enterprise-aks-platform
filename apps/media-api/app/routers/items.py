@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
+from ..metrics import items_created
 from ..models import MediaItem
 from ..redis_client import get_redis
 from ..schemas import MediaItemCreate, MediaItemRead
@@ -27,6 +28,7 @@ async def create_item(payload: MediaItemCreate, session: AsyncSession = Depends(
 
     redis_client = get_redis()
     await redis_client.lpush("media:process", str(item.id))
+    items_created.inc()
     return item
 
 
