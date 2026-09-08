@@ -13,3 +13,11 @@ output "vnet_name" {
 output "subnet_ids" {
   value = module.networking.subnet_ids
 }
+
+output "media_identity_client_id" {
+  value = module.identity.client_id
+}
+
+output "media_identity_principal_id" {
+  value = module.identity.principal_id
+}
