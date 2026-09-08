@@ -51,6 +51,28 @@ PostgreSQL password
 
 No password ever appears in a git repository or a Kubernetes manifest.
 
+### Passwordless PostgreSQL (Microsoft Entra ID)
+
+The demo app does not use the Key Vault password at all. Instead, the pod's
+workload identity (`uami-media-dev-ne`, registered as the server's Entra
+administrator) fetches a short-lived access token and passes it as the
+PostgreSQL password:
+
+```
+pod (service account media-api)
+  │  federated credential → workload identity (client-id 2308ae95-…)
+  ▼
+login.microsoftonline.com → token for https://ossrdbms-aad.database.windows.net
+  │  (scope ossrdbms-aad — the legacy ossrdbms scope is rejected with AADSTS500011)
+  ▼
+psql-dev-media-ne.postgres.database.azure.com as uami-media-dev-ne (ssl=require)
+```
+
+- Network: the `default-deny` policy blocks everything; `allow-db-egress` opens
+  `10.0.3.0/24:5432` and `allow-aad-egress` opens TCP 443 for the token endpoint.
+- The `db-init` job creates the `media` database with the same identity before the app starts.
+- Key Vault still holds `db-password` / `db-url` as a legacy fallback and as the CSI-driver showcase.
+
 ### Network topology
 
 ```
@@ -85,6 +107,8 @@ AKS cluster converges (Sync/Healthy)
 
 - Argo CD UI is exposed via a `LoadBalancer` service on a frontend IP of the cluster's
   outbound LB (`externalTrafficPolicy: Local`, floating IP). The frontend IP costs ~$3.5/mo.
+- The demo API is exposed the same way: `media-api-lb` on port **8080**
+  (`http://4.245.138.35:8080/healthz`), second frontend IP ~$3.5/mo.
 - `nsg-aks` allows TCP 80/443 from the Internet for LB frontends (`lb_ingress_ports`
   in the networking module) — everything else stays denied (zero-trust posture).
 - Why not `kubectl port-forward`: the Cilium datapath on AKS intercepts only the nodePort
@@ -93,9 +117,7 @@ AKS cluster converges (Sync/Healthy)
 
 ## Planned (next iterations)
 
-- Argo CD + GitOps repository
-- `media-api` (FastAPI) + `media-worker` + Redis, deployed by Argo CD
-- HPA, PDB, NetworkPolicies, ResourceQuotas
+- PDB for the demo app (HPA and NetworkPolicies are already live)
 - GitHub Actions CI/CD with Trivy, Helm lint, Checkov
 - Prometheus + Grafana + OpenTelemetry
 - Azure Front Door / Application Gateway in front of ingress

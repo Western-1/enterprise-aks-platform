@@ -29,11 +29,11 @@ Production-рівень Kubernetes-платформа в Azure, побудова
 | VNet + підмережі + NSG + private DNS | ✅ live |
 | ACR `acrdevmedia.azurecr.io` | ✅ live |
 | Key Vault + private endpoint | ✅ live |
-| PostgreSQL (private endpoint, пароль у KV) | ✅ live |
+| PostgreSQL (private endpoint, Entra ID без пароля) | ✅ live |
 | AKS 1.34 (Cilium, OIDC, Workload Identity, CSI) | ✅ live |
 | Log Analytics / Azure Monitor | ✅ live |
 | GitOps (Argo CD) | ✅ live — app-of-apps + cluster-config Synced |
-| Демо-застосунок (FastAPI) | 📋 наступне |
+| Демо-застосунок (FastAPI) | ✅ live — http://4.245.138.35:8080/healthz |
 | CI/CD (GitHub Actions) | 📋 наступне |
 | Prometheus + Grafana | 📋 наступне |
 
@@ -154,7 +154,10 @@ az aks get-credentials --name aks-dev-cluster-ne --resource-group rg-dev-aks-ne
 
 - **Жодних секретів у git.** Пароль PostgreSQL генерує Terraform і одразу пише в Key Vault
   (`db-password`, `db-url`). Поди читають його через **Secrets Store CSI driver**.
+  Сам застосунок входить у PostgreSQL **без пароля** — короткоживучим токеном
+  Microsoft Entra, отриманим через workload identity (див. [архітектуру](docs/architecture.ua.md)).
 - **Workload Identity.** Поди автентифікуються в Azure через федеративний service account — без client secrets.
+  Той самий identity дає і секрети Key Vault (CSI-драйвер), і токени PostgreSQL (Entra ID).
 - **Private networking.** Key Vault і PostgreSQL доступні лише через private endpoints.
 - **RBAC всюди.** Ролі з мінімальними правами; ваш користувач має рівно стільки, скільки потрібно задачі.
 
@@ -170,10 +173,18 @@ az aks get-credentials --name aks-dev-cluster-ne --resource-group rg-dev-aks-ne
 
 *AKS-кластер `aks-dev-cluster-ne`: Kubernetes 1.34, system і user node pools з автоскейлінгом, мережа Cilium.*
 
+![Поди демо-застосунку](docs/screenshots/media-pods.png)
+
+*Неймспейс `media`: `media-api` + `media-worker` у Running, Redis у Running, job `db-init` Completed (створив базу `media` через workload identity).*
+
+![Демо-API через публічний load balancer](docs/screenshots/media-healthz.png)
+
+*Наскрізна перевірка через `http://4.245.138.35:8080`: `/healthz` повертає ok з db і redis true; POST/GET `/media/items` пише й читає рядок у PostgreSQL (view_count збільшує воркер через Redis).*
+
 ## Витрати
 
 Це trial-підписка з **безкоштовними кредитами $200** — картка ніколи не списується, поки явно
-не знято spending limit. Поточна інфраструктура коштує **~$210/міс**, тому кластер вмикають
+не знято spending limit. Поточна інфраструктура коштує **~$217/міс**, тому кластер вмикають
 тільки під час роботи. Повна таблиця: [docs/costs.ua.md](docs/costs.ua.md).
 
 ## Індекс документації

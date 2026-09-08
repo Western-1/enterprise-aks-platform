@@ -122,3 +122,34 @@ argocd app get cluster-config       # деталі та ресурси
 1. Запуште маніфести в `enterprise-aks-gitops` (наприклад, `apps/media-api/`).
 2. Додайте маніфест `Application` у `enterprise-aks-gitops/infrastructure/argocd/`.
 3. Пуш. Argo CD синхронізує новий застосунок протягом хвилини — **kubectl apply не потрібен**.
+
+## 9. Демо-застосунок end-to-end (media-api)
+
+```powershell
+# поди та db-init job
+kubectl get pods -n media
+kubectl logs -n media job/db-init        # "database 'media' created"
+
+# health усередині кластера (port-forward на цьому кластері не працює)
+kubectl exec deploy/media-api -n media -- python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/healthz').read().decode())"
+# {"status":"ok","db":true,"redis":true,"http":200}
+
+# публічний load balancer (порт 8080, див. terraform lb_ingress_ports)
+curl.exe http://4.245.138.35:8080/healthz
+curl.exe -X POST http://4.245.138.35:8080/media/items -H "Content-Type: application/json" -d "@item.json"
+curl.exe http://4.245.138.35:8080/media/items   # view_count росте — воркер обробив чергу
+```
+
+Очікувано: `/healthz` — `ok` з `db` і `redis` true; POST повертає 201 з `id`;
+GET показує елемент.
+
+### Діагностика демо (вивчені уроки)
+
+| Симптом | Причина | Лікування |
+|---|---|---|
+| `ImagePullBackOff`, `Failed to authorize ... acr-credential-provider` | `AcrPull` видано system identity кластера, а образи тягне **kubelet identity** агент-пулу | `principal_id = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id` (modules/aks) |
+| `no pg_hba.conf entry ... no encryption` з asyncpg | Кривий URL пароля (неекрановані `@`, `&`, `#`) або под без лейбла `app: media` для `allow-db-egress` | Буквено-цифровий пароль + username з `%40`; лейбл на кожен под, що говорить із БД |
+| Зміна через Terraform/CLI «успішна», але сервер її ігнорує | Хибне ім'я REST-властивості (`authentication` замість `authConfig`); операції з паролем асинхронні — треба пильнувати операцію | Використовувати `properties.authConfig`; чекати `Azure-AsyncOperation` до `Succeeded` |
+| `AADSTS500011` для `https://ossrdbms.database.windows.net` | Flexible Server чекає audience **ossrdbms-aad** | Scope `https://ossrdbms-aad.database.windows.net/.default` |
+| Обмін токена висить у поді | `default-deny` блокує egress до `login.microsoftonline.com:443` | NetworkPolicy `allow-aad-egress` (TCP 443); варіант Cilium FQDN тут не спрацював |
+| Синк Argo CD застряг на `Job ... field is immutable` | Змінився pod template job | `kubectl delete job <name> -n media`, Argo перестворить, потім sync |
