@@ -153,3 +153,21 @@ GET lists the item.
 | `AADSTS500011` for `https://ossrdbms.database.windows.net` | Flexible Server expects the **ossrdbms-aad** audience | Scope `https://ossrdbms-aad.database.windows.net/.default` |
 | Token exchange hangs in the pod | `default-deny` blocks egress to `login.microsoftonline.com:443` | `allow-aad-egress` NetworkPolicy (TCP 443); the Cilium FQDN variant did not take effect here |
 | Argo CD sync stuck on `Job ... field is immutable` | Job pod template changed | `kubectl delete job <name> -n media`, let Argo recreate it, then sync |
+
+## 10. CI/CD (GitHub Actions, OIDC, no secrets)
+
+- `ci.yml` (PR + main): `terraform fmt/validate/plan` (remote state), Checkov,
+  pytest on Python 3.12, docker build, Trivy image scan.
+- `cd.yml` (main): builds and pushes a `sha-<short>` image tag to ACR.
+  Argo CD deploys only pinned tags, so publishing never auto-deploys.
+- Auth is OIDC: app registration `github-actions-oidc` with federated
+  credentials for `ref:refs/heads/main` and `pull_request` (note: GitHub sends
+  the subject with `@owner-id/@repo-id` suffixes — copy it verbatim from the
+  AADSTS700213 error if login fails). Roles (least privilege): Reader on the
+  subscription, AcrPush on the ACR, Storage Blob Data Contributor on the state
+  storage, AKS Cluster User on the cluster, Key Vault Secrets User on the vault.
+- CI plan runs with `-refresh=false`: the Key Vault firewall (by design) blocks
+  the runner data plane; refresh happens on apply.
+- Terraform state lives in `sttfaksdevne02/tfstate` (bootstrapped once, outside
+  Terraform). Repo Variables (not secrets): `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
+  `AZURE_SUBSCRIPTION_ID`, `TF_VAR_current_user_object_id`, `TF_VAR_home_ip`.
