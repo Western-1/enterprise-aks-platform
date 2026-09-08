@@ -1,11 +1,9 @@
 resource "random_password" "db_admin" {
-  length           = 24
-  special          = true
-  min_upper        = 1
-  min_lower        = 1
-  min_numeric      = 1
-  min_special      = 1
-  override_special = "!@#$%&*"
+  length  = 24
+  special = false
+  upper   = true
+  lower   = true
+  numeric = true
 }
 
 resource "azurerm_postgresql_flexible_server" "pg" {
@@ -57,6 +55,6 @@ resource "azurerm_key_vault_secret" "db_password" {
 
 resource "azurerm_key_vault_secret" "db_url" {
   name         = "db-url"
-  value        = "postgresql://${var.admin_username}@${azurerm_postgresql_flexible_server.pg.name}:${random_password.db_admin.result}@${azurerm_postgresql_flexible_server.pg.name}.postgres.database.azure.com:5432/${var.database_name}"
+  value        = "postgresql://${var.admin_username}%40${azurerm_postgresql_flexible_server.pg.name}:${random_password.db_admin.result}@${azurerm_postgresql_flexible_server.pg.name}.postgres.database.azure.com:5432/${var.database_name}"
   key_vault_id = var.key_vault_id
 }
