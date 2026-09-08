@@ -43,6 +43,14 @@ unless the spending limit is explicitly removed.
 2. Export monthly totals and update the "Actual cost" column.
 3. Before creating anything new: add a row to *Planned resources* first.
 
+### Actuals, September 2026 (month-to-date, Sep 8)
+
+| Scope | Actual cost | Notes |
+|---|---|---|
+| `mc_rg-dev-aks-ne_aks-dev-cluster-ne_northeurope` (nodes, disks, LB) | $56.94 | 8 days of VM runtime |
+| `rg-dev-aks-ne` (PostgreSQL, IPs, ACR, Key Vault, storage, logs) | $14.39 | |
+| **Total MTD** | **$71.33** | Pace ≈ $267/mo — above the ~$218 idle estimate (user node was up at times) |
+
 ## Cleanup
 
 - After the task is done: `terraform destroy` in `terraform/environments/dev`, then update this file.

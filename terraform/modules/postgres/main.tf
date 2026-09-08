@@ -47,14 +47,7 @@ resource "azurerm_private_endpoint" "pe" {
   }
 }
 
-resource "azurerm_key_vault_secret" "db_password" {
-  name         = "db-password"
-  value        = random_password.db_admin.result
-  key_vault_id = var.key_vault_id
-}
-
-resource "azurerm_key_vault_secret" "db_url" {
-  name         = "db-url"
-  value        = "postgresql://${var.admin_username}%40${azurerm_postgresql_flexible_server.pg.name}:${random_password.db_admin.result}@${azurerm_postgresql_flexible_server.pg.name}.postgres.database.azure.com:5432/${var.database_name}"
-  key_vault_id = var.key_vault_id
-}
+# NOTE: no Key Vault secrets here on purpose. The app authenticates to
+# PostgreSQL passwordless via Microsoft Entra ID (workload identity);
+# the random admin password above exists only because Azure requires it
+# at server creation time (break-glass via Terraform state, never in git).
