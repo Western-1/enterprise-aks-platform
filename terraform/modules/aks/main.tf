@@ -1,15 +1,15 @@
 resource "azurerm_kubernetes_cluster" "aks" {
-  name                            = var.name
-  resource_group_name             = var.resource_group_name
-  location                        = var.location
-  dns_prefix                      = var.name
-  kubernetes_version              = var.kubernetes_version
-  node_resource_group             = var.node_resource_group
-  sku_tier                        = var.sku_tier
-  automatic_upgrade_channel       = "stable"
-  azure_policy_enabled            = true
-  oidc_issuer_enabled             = true
-  workload_identity_enabled       = true
+  name                      = var.name
+  resource_group_name       = var.resource_group_name
+  location                  = var.location
+  dns_prefix                = var.name
+  kubernetes_version        = var.kubernetes_version
+  node_resource_group       = var.node_resource_group
+  sku_tier                  = var.sku_tier
+  automatic_upgrade_channel = "stable"
+  azure_policy_enabled      = true
+  oidc_issuer_enabled       = true
+  workload_identity_enabled = true
 
   api_server_access_profile {
     authorized_ip_ranges = var.api_server_authorized_ip_ranges
@@ -30,7 +30,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     type = "SystemAssigned"
   }
 
-network_profile {
+  network_profile {
     network_plugin      = "azure"
     network_plugin_mode = "overlay"
     network_data_plane  = "cilium"
@@ -73,5 +73,5 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
 resource "azurerm_role_assignment" "aks_pull_acr" {
   scope                = var.acr_id
   role_definition_name = "AcrPull"
-  principal_id         = azurerm_kubernetes_cluster.aks.identity[0].principal_id
+  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
 }
