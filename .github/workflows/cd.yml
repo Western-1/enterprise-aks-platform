@@ -1,9 +1,10 @@
 name: cd
 
-# Builds and publishes the demo image on every merge to main.
-# The tag is the commit SHA on purpose: Argo CD deploys only tags pinned
-# in enterprise-aks-gitops, so publishing never auto-deploys.
-# Follow-up: automation that bumps the tag in the GitOps repo.
+# Builds and publishes the demo image on every merge to main, then bumps
+# the image tag in enterprise-aks-gitops so Argo CD deploys it.
+# Needs the GITOPS_PAT secret (fine-grained PAT, Contents: read+write on
+# the GitOps repo). The db-init Job carries Replace=true so tag bumps
+# sync without manual `kubectl delete job`.
 
 on:
   push:
@@ -37,4 +38,23 @@ jobs:
           TAG="sha-${GITHUB_SHA::7}"
           docker build -t acrdevmedia.azurecr.io/media-api:$TAG apps/media-api
           docker push acrdevmedia.azurecr.io/media-api:$TAG
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
           echo "Published acrdevmedia.azurecr.io/media-api:$TAG"
+
+      - name: Bump tag in GitOps repo
+        env:
+          GITOPS_PAT: ${{ secrets.GITOPS_PAT }}
+        run: |
+          if [ -z "$GITOPS_PAT" ]; then
+            echo "::warning::GITOPS_PAT not set, skipping tag bump"
+            exit 0
+          fi
+          git clone --depth 1 "https://x-access-token:${GITOPS_PAT}@github.com/Western-1/enterprise-aks-gitops.git" /tmp/gitops
+          cd /tmp/gitops
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          sed -i -E "s|acrdevmedia.azurecr.io/media-api:[^[:space:]'\"]*|acrdevmedia.azurecr.io/media-api:${TAG}|g" \
+            apps/media/db-init.yaml apps/media/media-api.yaml apps/media/media-worker.yaml
+          git add apps/media/
+          git diff --cached --quiet && echo "tags already at $TAG" || git commit -m "chore: bump media-api image to ${TAG}"
+          git push origin main

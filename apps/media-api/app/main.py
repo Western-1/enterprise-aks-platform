@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
-app = FastAPI(title="media-api", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="media-api", version="1.2.1", lifespan=lifespan)
 
 app.include_router(items.router)
 
