@@ -33,3 +33,9 @@ redis:
 configs:
   params:
     server.insecure: true
+  # Argo 2.14 schema does not know .status.terminatingReplicas (newer K8s
+  # ReplicaSets) and fails the compare phase; ignore the field for diffs.
+  cm:
+    resource.customizations.ignoreDifferences.apps_ReplicaSet: |
+      jsonPointers:
+      - /status/terminatingReplicas

@@ -84,6 +84,21 @@ Private DNS зони: privatelink.vaultcore.azure.net, privatelink.postgres.data
 
 Key Vault і PostgreSQL доступні **лише** через private endpoints — без публічних IP.
 
+## Спостережуваність (live)
+
+- `kube-prometheus-stack` 90.0.0 через Argo CD (застосунок `monitoring`, multi-source:
+  чарт із публічного репо + `apps/monitoring/values.yaml` із GitOps).
+  Налаштовано під маленькі ноди: retention 7д/8GB, PVC 10Gi, alertmanager вимкнено,
+  Grafana ClusterIP з persistence 5Gi (admin-пароль генерує чарт, лежить у секреті
+  `monitoring-grafana`).
+- `media-api` віддає `/metrics` (лічильник `media_items_created_total`), а
+  `ServiceMonitor` згодовує їх Prometheus — перевірено end-to-end.
+- Grafana приватна (без зайвого LB-frontend): перевіряти зсередини кластера.
+- Два уроки Argo CD з цього rollout: CRD prometheus-operator перевищують ліміт
+  анотацій 256KB при client-side apply → `ServerSideApply=true`; клієнтська схема
+  Argo 2.14 не знає `.status.terminatingReplicas` (новіший K8s) → server-side diff
+  compare option на застосунку.
+
 ## GitOps-доставка
 
 ```
@@ -118,5 +133,5 @@ AKS-кластер сходиться (Sync/Healthy)
 
 - PDB для демо-застосунку (HPA і NetworkPolicies вже live)
 - Автоматичний bump image-тега в GitOps-репо на merge (CI + публікація sha-тегів вже live)
-- Prometheus + Grafana + OpenTelemetry
+- OpenTelemetry-колектор перед Prometheus
 - Azure Front Door / Application Gateway перед ingress

@@ -171,3 +171,26 @@ GET показує елемент.
 - State Terraform лежить у `sttfaksdevne02/tfstate` (забутстраплено разово, поза
   Terraform). Змінні репо (не секрети): `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
   `AZURE_SUBSCRIPTION_ID`, `TF_VAR_current_user_object_id`, `TF_VAR_home_ip`.
+
+## 11. Моніторинг (kube-prometheus-stack через Argo CD)
+
+```powershell
+# здоров'я стека
+kubectl get pods -n monitoring
+kubectl get prometheus -n monitoring
+kubectl get app monitoring -n argocd
+
+# admin-пароль Grafana (генерує чарт)
+kubectl -n monitoring get secret monitoring-grafana -o jsonpath="{.data.admin-password}" | ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+
+# метрика застосунку end-to-end (запустити з пода в неймспейсі monitoring,
+# напр. kubectl run promq --image=nicolaka/netshoot -n monitoring)
+curl "http://monitoring-kube-prometheus-prometheus.monitoring:9090/api/v1/query?query=media_items_created_total"
+# {"status":"success",...,"media_items_created_total",...,"1"}
+```
+
+Очікувано: усі поди моніторингу Running, Prometheus `1` desired/ready,
+`media_items_created_total` росте з кожним POST /media/items.
+
+> У Grafana навмисно немає публічного ендпоїнта (зайві ~$3.5/міс за frontend):
+> перевіряти через Prometheus API зсередини кластера.
