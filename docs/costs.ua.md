@@ -22,10 +22,11 @@ Azure Cost Management (`Cost analysis`) і оновлюються тут.
 | AKS control plane | Free tier | $0 | | |
 | AKS system pool | 2× `Standard_EC2as_v5` | ~$184 / міс | | Confidential compute — єдина родина VM, яку дозволяє trial-підписка |
 | AKS user pool | `Standard_EC2as_v5`, 0–1 ноди (автоскейлінг) | $0–92 / міс | | $0 у простої |
-| PostgreSQL | `psql-dev-media-ne` (B1ms, 32 ГБ, PG16) | ~$20 / міс | | Тільки private endpoint; пароль у Key Vault |
+| PostgreSQL | `psql-dev-media-ne` (B1ms, 32 ГБ, PG16) | ~$20 / міс | | Тільки private endpoint; вхід без пароля через Entra ID (секрети KV — legacy) |
 | Публічний IP (LB Argo CD) | Standard static IP `kubernetes-*` у MC_ RG | ~$3.5 / міс | | Один додатковий frontend на наявному outbound LB |
-| **Разом, у простої** | | **~$213 / міс** | | |
-| **Разом, під навантаженням** | | **~$305 / міс** | | |
+| Публічний IP (LB media-api) | Standard static IP `kubernetes-*` у MC_ RG | ~$3.5 / міс | | Frontend для `media-api-lb` на порту 8080 |
+| **Разом, у простої** | | **~$217 / міс** | | |
+| **Разом, під навантаженням** | | **~$309 / міс** | | |
 
 ## Заплановані ресурси (ще не створені)
 
