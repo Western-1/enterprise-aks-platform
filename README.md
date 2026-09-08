@@ -34,7 +34,7 @@ The result is a single artifact you can show at an interview and defend:
 | Log Analytics / Azure Monitor | ✅ live |
 | GitOps (Argo CD) | ✅ live — app-of-apps + cluster-config Synced |
 | Demo application (FastAPI) | ✅ live — http://4.245.138.35:8080/healthz |
-| CI/CD (GitHub Actions) | 📋 next |
+| CI/CD (GitHub Actions) | ✅ live — OIDC, no secrets |
 | Prometheus + Grafana | 📋 next |
 
 ## Architecture (simplified)

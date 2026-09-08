@@ -118,6 +118,6 @@ AKS cluster converges (Sync/Healthy)
 ## Planned (next iterations)
 
 - PDB for the demo app (HPA and NetworkPolicies are already live)
-- GitHub Actions CI/CD with Trivy, Helm lint, Checkov
+- Automatic image-tag bump in the GitOps repo on merge (CI + sha-tagged publish are live)
 - Prometheus + Grafana + OpenTelemetry
 - Azure Front Door / Application Gateway in front of ingress

@@ -25,8 +25,9 @@ unless the spending limit is explicitly removed.
 | PostgreSQL | `psql-dev-media-ne` (B1ms, 32 GB, PG16) | ~$20 / mo | | Private endpoint only; passwordless Entra ID auth (KV secrets kept as legacy) |
 | Public IP (Argo CD LB) | Standard static IP `kubernetes-*` in MC_ RG | ~$3.5 / mo | | One extra frontend on the existing outbound LB |
 | Public IP (media-api LB) | Standard static IP `kubernetes-*` in MC_ RG | ~$3.5 / mo | | Frontend for `media-api-lb` on port 8080 |
-| **Total, idle** | | **~$217 / mo** | | |
-| **Total, under load** | | **~$309 / mo** | | |
+| Storage (Terraform state) | `sttfaksdevne02` (Standard_LRS) | ~$1 / mo | | Tiny state blob; bootstrapped outside Terraform |
+| **Total, idle** | | **~$218 / mo** | | |
+| **Total, under load** | | **~$310 / mo** | | |
 
 ## Planned resources (not yet created)
 

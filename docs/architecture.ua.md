@@ -117,6 +117,6 @@ AKS-кластер сходиться (Sync/Healthy)
 ## Заплановано (наступні ітерації)
 
 - PDB для демо-застосунку (HPA і NetworkPolicies вже live)
-- GitHub Actions CI/CD з Trivy, Helm lint, Checkov
+- Автоматичний bump image-тега в GitOps-репо на merge (CI + публікація sha-тегів вже live)
 - Prometheus + Grafana + OpenTelemetry
 - Azure Front Door / Application Gateway перед ingress
