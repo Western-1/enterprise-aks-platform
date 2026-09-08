@@ -1,0 +1,107 @@
+name: ci
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+      - "apps/**"
+      - ".github/workflows/ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - "apps/**"
+      - ".github/workflows/ci.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_USE_OIDC: "true"
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform/environments/dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.8"
+
+      - name: fmt
+        run: terraform fmt -check -recursive ../../
+
+      - name: Azure login (OIDC, no secrets)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: init
+        run: terraform init -input=false
+
+      - name: validate
+        run: terraform validate
+
+      - name: plan
+        run: terraform plan -input=false -lock=false
+        env:
+          TF_VAR_subscription_id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          TF_VAR_tenant_id: ${{ vars.AZURE_TENANT_ID }}
+          TF_VAR_current_user_object_id: ${{ vars.TF_VAR_current_user_object_id }}
+          TF_VAR_home_ip: ${{ vars.TF_VAR_home_ip }}
+
+  checkov:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkov scan
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: terraform/
+          framework: terraform
+          quiet: true
+
+  app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/media-api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps and run tests
+        run: |
+          pip install -r requirements.txt
+          python -m pytest tests/ -q
+
+      - name: Build image
+        run: docker build -t media-api:ci .
+
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: media-api:ci
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: apps/media-api/trivy-results.sarif
