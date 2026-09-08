@@ -35,7 +35,7 @@ Production-рівень Kubernetes-платформа в Azure, побудова
 | GitOps (Argo CD) | ✅ live — app-of-apps + cluster-config Synced |
 | Демо-застосунок (FastAPI) | ✅ live — http://4.245.138.35:8080/healthz |
 | CI/CD (GitHub Actions) | ✅ live — OIDC, без секретів |
-| Prometheus + Grafana | 📋 наступне |
+| Prometheus + Grafana | ✅ live — приватно, тільки в кластері |
 
 ## Архітектура (спрощено)
 
@@ -180,6 +180,14 @@ az aks get-credentials --name aks-dev-cluster-ne --resource-group rg-dev-aks-ne
 ![Демо-API через публічний load balancer](docs/screenshots/media-healthz.png)
 
 *Наскрізна перевірка через `http://4.245.138.35:8080`: `/healthz` повертає ok з db і redis true; POST/GET `/media/items` пише й читає рядок у PostgreSQL (view_count збільшує воркер через Redis).*
+
+![Поди моніторингу](docs/screenshots/monitoring-pods.png)
+
+*`kube-prometheus-stack` у `monitoring`: operator, Grafana, kube-state-metrics, node-exporters і Prometheus (2/2) у Running.*
+
+![Метрика застосунку в Prometheus](docs/screenshots/monitoring-query.png)
+
+*`media_items_created_total`, зібрана з `media-api` через ServiceMonitor — весь шлях (застосунок → /metrics → Prometheus) перевірено.*
 
 ## Витрати
 

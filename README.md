@@ -35,7 +35,7 @@ The result is a single artifact you can show at an interview and defend:
 | GitOps (Argo CD) | ✅ live — app-of-apps + cluster-config Synced |
 | Demo application (FastAPI) | ✅ live — http://4.245.138.35:8080/healthz |
 | CI/CD (GitHub Actions) | ✅ live — OIDC, no secrets |
-| Prometheus + Grafana | 📋 next |
+| Prometheus + Grafana | ✅ live — private, in-cluster only |
 
 ## Architecture (simplified)
 
@@ -181,6 +181,14 @@ Details: [docs/architecture.md](docs/architecture.md).
 ![Demo API through the public load balancer](docs/screenshots/media-healthz.png)
 
 *End-to-end check through `http://4.245.138.35:8080`: `/healthz` reports ok with db and redis true; POST/GET `/media/items` writes and reads a row in PostgreSQL (view_count is incremented by the worker through Redis).*
+
+![Monitoring pods](docs/screenshots/monitoring-pods.png)
+
+*`kube-prometheus-stack` in `monitoring`: operator, Grafana, kube-state-metrics, node-exporters and Prometheus (2/2) Running.*
+
+![App metric in Prometheus](docs/screenshots/monitoring-query.png)
+
+*`media_items_created_total` scraped from `media-api` through the ServiceMonitor — the whole path (app → /metrics → Prometheus) verified.*
 
 ## Costs
 
