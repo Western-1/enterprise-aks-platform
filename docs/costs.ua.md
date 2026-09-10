@@ -59,6 +59,17 @@ Azure Cost Management (`Cost analysis`) і оновлюються тут.
 - План повернення й точні команди: [docs/recovery.ua.md](recovery.ua.md).
   Відкладено: PR #18 (безпечні для квоти оновлення) і перевірка після старту.
 
+### Фінал, 10 вересня 2026 — кластер видалено
+
+- За рішенням власника (без білінгових дій): `az aks delete` прийнято,
+  `aks-dev-cluster-ne` зник (`ResourceNotFound`; node resource group
+  `MC_rg-dev-aks-ne_aks-dev-cluster-ne_northeurope` видалено разом із ним).
+  Решта ресурсів (VNet, ACR, Key Vault, PostgreSQL, IP, Log Analytics,
+  state storage) лишаються, але коштують **$0**, поки підписка вимкнена.
+- Останні відомі витрати: **$71.33 MTD (8 вересня)**. Перебудова з коду
+  можлива будь-коли після ввімкнення: `terraform apply` у
+  `terraform/environments/dev`, далі Argo CD синхронізує GitOps-репо.
+
 ## Прибирання
 
 - Після завершення задачі: `terraform destroy` у `terraform/environments/dev`, потім оновити цей файл.

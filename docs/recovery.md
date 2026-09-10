@@ -4,6 +4,12 @@
 
 ## Status (September 10, 2026)
 
+> **Superseded: the cluster was deleted the same day per owner decision**
+> (`az aks delete` accepted, `aks-dev-cluster-ne` returns `ResourceNotFound`).
+> The resume steps below now apply to a **rebuild** (`terraform apply`, then
+> Argo CD syncs), not a start. Costs while disabled: **$0**; last known spend
+> **$71.33 MTD (September 8)** — see [docs/costs.md](costs.md).
+
 - The subscription is read-only (`ReadOnlyDisabledSubscription`, trial credits
   likely exhausted). All writes are blocked: `az aks start`, `terraform apply`,
   and Terraform state access (`403 AccountIsDisabled`).

@@ -59,6 +59,18 @@ unless the spending limit is explicitly removed.
 - Resume plan and exact commands: [docs/recovery.md](recovery.md). Pending:
   PR #18 (quota-safe upgrades) and the post-start verification.
 
+### Final, September 10, 2026 — cluster deleted
+
+- Per owner decision (no billing actions): `az aks delete` was accepted and
+  `aks-dev-cluster-ne` is gone (`ResourceNotFound`; node resource group
+  `MC_rg-dev-aks-ne_aks-dev-cluster-ne_northeurope` is removed with it).
+  Remaining resources (VNet, ACR, Key Vault, PostgreSQL, IPs, Log Analytics,
+  state storage) stay in place but accrue **$0** while the subscription is
+  disabled.
+- Last known spend: **$71.33 MTD (September 8)**. Rebuild is possible from
+  code at any time after re-enabling: `terraform apply` in
+  `terraform/environments/dev`, then Argo CD syncs the GitOps repo.
+
 ## Cleanup
 
 - After the task is done: `terraform destroy` in `terraform/environments/dev`, then update this file.
