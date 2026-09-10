@@ -4,6 +4,12 @@
 
 ## Статус (10 вересня 2026)
 
+> **Застаріло: кластер видалено того ж дня за рішенням власника**
+> (`az aks delete` прийнято, `aks-dev-cluster-ne` повертає `ResourceNotFound`).
+> Кроки повернення нижче тепер стосуються **перебудови** (`terraform apply`,
+> далі Argo CD синхронізує), а не старту. Витрати у вимкненому стані: **$0**;
+> останні відомі витрати **$71.33 MTD (8 вересня)** — див. [docs/costs.ua.md](costs.ua.md).
+
 - Підписка read-only (`ReadOnlyDisabledSubscription`, імовірно вичерпано
   trial-кредити). Усі записи заблоковано: `az aks start`, `terraform apply`
   і доступ до Terraform state (`403 AccountIsDisabled`).
