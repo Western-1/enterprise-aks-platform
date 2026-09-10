@@ -85,6 +85,21 @@ az postgres flexible-server show --name psql-dev-media-ne --resource-group rg-de
 az acr show --name acrdevmedia --query "{loginServer:loginServer, sku:sku.name}"
 ```
 
+### Безпечні для квоти оновлення AKS
+
+Dev-підписка має чотири регіональні vCPU, які зайняті двома system-нодами.
+User pool використовує `max_unavailable = "1"` у Terraform (без surge-нод).
+System (default) pool так не вміє — azurerm 4.81 підтримує там лише `max_surge`,
+тому його zero-surge policy застосовується разово через CLI і зберігається
+(Terraform це поле не керує, тож дрейфу немає):
+
+```powershell
+az aks nodepool update --resource-group rg-dev-aks-ne --cluster-name aks-dev-cluster-ne --nodepool-name system --max-surge 0 --max-unavailable 1
+```
+
+Під час оновлення одна нода може бути недоступною; перед переходом на surge
+policy збільште регіональну vCPU-квоту.
+
 ## 7. Перевірка витрат
 
 ```powershell
