@@ -105,6 +105,10 @@ git push → Argo CD (app-of-apps) → створює/синхронізує App
 
 *Інтерфейс Argo CD: кореневий застосунок `app-of-apps` і `cluster-config` — обидва Synced і Healthy. Кластер сходиться з репозиторію enterprise-aks-gitops, без ручного kubectl apply.*
 
+![Деталі media-apps в Argo CD](docs/screenshots/argocd-media-apps-detail.png)
+
+*Застосунок Argo CD `media-apps`: Healthy, Synced до `main (2cc889d)`, Sync OK — deployments із running-подами, redis, completed `db-init` job, HPA та NetworkPolicies, усе зійшлося з git.*
+
 ## Структура репозиторію
 
 ```

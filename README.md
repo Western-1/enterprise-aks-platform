@@ -105,6 +105,10 @@ Current apps managed by Argo CD: `cluster-config` (namespaces `media`, `database
 
 *Argo CD UI: `app-of-apps` root application and `cluster-config` — both Synced and Healthy. The cluster converges from the enterprise-aks-gitops repository, no manual kubectl apply.*
 
+![Argo CD media-apps detail](docs/screenshots/argocd-media-apps-detail.png)
+
+*Argo CD application `media-apps`: Healthy, Synced to `main (2cc889d)`, Sync OK — deployments with running pods, redis, completed `db-init` job, HPA and NetworkPolicies, all converged from git.*
+
 ## Repo layout
 
 ```
