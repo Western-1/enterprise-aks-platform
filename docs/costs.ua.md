@@ -51,6 +51,14 @@ Azure Cost Management (`Cost analysis`) і оновлюються тут.
 | `rg-dev-aks-ne` (PostgreSQL, IP, ACR, Key Vault, сховище, логи) | $14.39 | |
 | **Разом MTD** | **$71.33** | Темп ≈ $267/міс — вище оцінки простою ~$218 (user-нода часом була піднята) |
 
+### Статус, 10 вересня 2026
+
+- Підписка read-only (`ReadOnlyDisabledSubscription`, імовірно вичерпано
+  trial-кредити): AKS `Deallocated`, усі записи (start, apply, доступ до state)
+  заблоковано, і **нарахувань немає**, поки вимкнено.
+- План повернення й точні команди: [docs/recovery.ua.md](recovery.ua.md).
+  Відкладено: PR #18 (безпечні для квоти оновлення) і перевірка після старту.
+
 ## Прибирання
 
 - Після завершення задачі: `terraform destroy` у `terraform/environments/dev`, потім оновити цей файл.

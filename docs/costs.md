@@ -51,6 +51,14 @@ unless the spending limit is explicitly removed.
 | `rg-dev-aks-ne` (PostgreSQL, IPs, ACR, Key Vault, storage, logs) | $14.39 | |
 | **Total MTD** | **$71.33** | Pace ≈ $267/mo — above the ~$218 idle estimate (user node was up at times) |
 
+### Status, September 10, 2026
+
+- Subscription is read-only (`ReadOnlyDisabledSubscription`, trial credits
+  likely exhausted): AKS is `Deallocated`, all writes (start, apply, state
+  access) are blocked, and **nothing accrues** while disabled.
+- Resume plan and exact commands: [docs/recovery.md](recovery.md). Pending:
+  PR #18 (quota-safe upgrades) and the post-start verification.
+
 ## Cleanup
 
 - After the task is done: `terraform destroy` in `terraform/environments/dev`, then update this file.
