@@ -23,8 +23,9 @@ unless the spending limit is explicitly removed.
 | AKS system pool | 2× `Standard_EC2as_v5` | ~$184 / mo | | Confidential compute — the only VM family allowed by the trial subscription |
 | AKS user pool | `Standard_EC2as_v5`, 0–1 nodes (autoscaled) | $0–92 / mo | | $0 while idle |
 | PostgreSQL | `psql-dev-media-ne` (B1ms, 32 GB, PG16) | ~$20 / mo | | Private endpoint only; passwordless Entra ID auth (KV secrets kept as legacy) |
-| Public IP (Argo CD LB) | Standard static IP `kubernetes-*` in MC_ RG | ~$3.5 / mo | | One extra frontend on the existing outbound LB |
-| Public IP (media-api LB) | Standard static IP `kubernetes-*` in MC_ RG | ~$3.5 / mo | | Frontend for `media-api-lb` on port 8080 |
+| Public IP (Argo CD LB) | Standard static IP `kubernetes-*` in MC_ RG | ~$3.5 / mo | | Live until deletion: `20.54.22.159` (HTTP, `server.insecure: true`) |
+| Public IP (ingress-nginx LB) | Standard static IP `kubernetes-*` in MC_ RG | ~$3.5 / mo | | Live until deletion: `4.210.50.215` for nip.io HTTPS (media + Argo); replaced the earlier per-app `media-api-lb` on `:8080` |
+| Redis | In-cluster `Deployment` in `media` | $0 | | Queue between API and worker; Azure Cache for Redis was never created (verified) |
 | Storage (Terraform state) | `sttfaksdevne02` (Standard_LRS) | ~$1 / mo | | Tiny state blob; bootstrapped outside Terraform |
 | **Total, idle** | | **~$218 / mo** | | |
 | **Total, under load** | | **~$310 / mo** | | |
@@ -33,8 +34,6 @@ unless the spending limit is explicitly removed.
 
 | Resource | Configuration | Estimated cost | Notes |
 |---|---|---|---|
-| Redis (Azure Cache for Redis) | Basic C0 | ~$14 / mo | Optional — or run Redis as a pod in AKS |
-| Argo CD | In-cluster | $0 | Runs on existing nodes; LB frontend IP costs ~$3.5/mo (see Current infrastructure) |
 | Prometheus + Grafana | In-cluster | $0 | Runs on existing nodes |
 
 ## How costs are measured
@@ -70,6 +69,11 @@ unless the spending limit is explicitly removed.
 - Last known spend: **$71.33 MTD (September 8)**. Rebuild is possible from
   code at any time after re-enabling: `terraform apply` in
   `terraform/environments/dev`, then Argo CD syncs the GitOps repo.
+- Residue (verified Sep 10, after delete): the node resource group
+  `MC_rg-dev-aks-ne_aks-dev-cluster-ne_northeurope` still lists the VMSSs,
+  3 public IPs, disks and identities — Azure-side cleanup is pending (likely
+  blocked by the disabled subscription). $0 while disabled; on re-enable,
+  confirm the group is gone, otherwise delete it manually.
 
 ## Cleanup
 

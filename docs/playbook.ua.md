@@ -130,6 +130,10 @@ argocd app get cluster-config       # деталі та ресурси
 > Примітка: сервер працює з `server.insecure: true` (чистий HTTP) для демо — у проду
 > Argo CD сам обслуговує TLS, зазвичай за ingress з SSO.
 >
+> Фінальний стан додав HTTPS ingress (`https://argocd.4-210-50-215.nip.io`,
+> self-signed, закомічено в GitOps) — live не перевірено, кластер помер раніше.
+> Перевіреним шляхом лишився `http://<frontend-ip>/`.
+>
 > Примітка: `kubectl port-forward` до Argo CD на цьому кластері не працює — датаплейн
 > Cilium відкидає трафік на порт сервісу на IP ноди (backend LB = порт сервісу з
 > floating IP; перехоплюється тільки nodePort). Підтримуваний шлях — LoadBalancer-сервіс.
@@ -157,10 +161,11 @@ kubectl logs -n media job/db-init        # "database 'media' created"
 kubectl exec deploy/media-api -n media -- python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/healthz').read().decode())"
 # {"status":"ok","db":true,"redis":true,"http":200}
 
-# публічний load balancer (порт 8080, див. terraform lb_ingress_ports)
-curl.exe http://4.245.138.35:8080/healthz
-curl.exe -X POST http://4.245.138.35:8080/media/items -H "Content-Type: application/json" -d "@item.json"
-curl.exe http://4.245.138.35:8080/media/items   # view_count росте — воркер обробив чергу
+# публічний ingress, фінальна схема (nginx, nip.io-хост, self-signed сертифікат, тому -k)
+curl.exe -sk https://media.4-210-50-215.nip.io/healthz
+curl.exe -sk -X POST https://media.4-210-50-215.nip.io/media/items -H "Content-Type: application/json" -d "@item.json"
+curl.exe -sk https://media.4-210-50-215.nip.io/media/items   # view_count росте — воркер обробив чергу
+# (рання ітерація: окремий LB-сервіс на застосунок, media-api-lb на :8080 — замінено на ingress)
 ```
 
 Очікувано: `/healthz` — `ok` з `db` і `redis` true; POST повертає 201 з `id`;
@@ -226,7 +231,7 @@ curl "http://monitoring-kube-prometheus-prometheus.monitoring:9090/api/v1/query?
 
 ```powershell
 # трейси: згенерувати трафік, потім пошукати в Tempo з пода в monitoring
-curl.exe -X POST http://4.245.138.35:8080/media/items -H "Content-Type: application/json" -d "@item.json"
+curl.exe -sk -X POST https://media.4-210-50-215.nip.io/media/items -H "Content-Type: application/json" -d "@item.json"
 kubectl run tempoq --image=nicolaka/netshoot --restart=Never -n monitoring -- sleep 300
 kubectl exec tempoq -n monitoring -- curl -s "http://tempo.monitoring:3200/api/search?limit=5"
 # {"traces":[{"traceID":"...","rootServiceName":"media-api","rootTraceName":"GET /healthz",...}, ...]}

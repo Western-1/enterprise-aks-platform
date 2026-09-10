@@ -127,6 +127,10 @@ argocd app get cluster-config       # details and resources
 > Note: the server runs with `server.insecure: true` (plain HTTP) for the demo — Argo CD
 > serves TLS itself in production setups, usually behind an ingress with SSO.
 >
+> Final state added an HTTPS ingress (`https://argocd.4-210-50-215.nip.io`,
+> self-signed, committed to GitOps) — never verified live, the cluster died first.
+> The verified path stayed `http://<frontend-ip>/`.
+>
 > Note: `kubectl port-forward` to Argo CD does not work on this cluster — the Cilium
 > datapath refuses traffic to the service port on node IPs (LB backend port = service port
 > with floating IP; only nodePort is intercepted). The LoadBalancer service is the
@@ -154,10 +158,11 @@ kubectl logs -n media job/db-init        # "database 'media' created"
 kubectl exec deploy/media-api -n media -- python -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/healthz').read().decode())"
 # {"status":"ok","db":true,"redis":true,"http":200}
 
-# public load balancer (port 8080, see terraform lb_ingress_ports)
-curl.exe http://4.245.138.35:8080/healthz
-curl.exe -X POST http://4.245.138.35:8080/media/items -H "Content-Type: application/json" -d "@item.json"
-curl.exe http://4.245.138.35:8080/media/items   # view_count grows — the worker processed the queue
+# public ingress, final setup (nginx, nip.io host, self-signed cert, hence -k)
+curl.exe -sk https://media.4-210-50-215.nip.io/healthz
+curl.exe -sk -X POST https://media.4-210-50-215.nip.io/media/items -H "Content-Type: application/json" -d "@item.json"
+curl.exe -sk https://media.4-210-50-215.nip.io/media/items   # view_count grows — the worker processed the queue
+# (earlier iteration: one LB service per app, media-api-lb on :8080 — replaced by ingress)
 ```
 
 Expected: `/healthz` is `ok` with `db` and `redis` true; POST returns 201 with an `id`;
@@ -228,7 +233,7 @@ Expected: all monitoring pods Running, Prometheus `1` desired/ready,
 
 ```powershell
 # traces: generate traffic, then search Tempo from a pod in monitoring
-curl.exe -X POST http://4.245.138.35:8080/media/items -H "Content-Type: application/json" -d "@item.json"
+curl.exe -sk -X POST https://media.4-210-50-215.nip.io/media/items -H "Content-Type: application/json" -d "@item.json"
 kubectl run tempoq --image=nicolaka/netshoot --restart=Never -n monitoring -- sleep 300
 kubectl exec tempoq -n monitoring -- curl -s "http://tempo.monitoring:3200/api/search?limit=5"
 # {"traces":[{"traceID":"...","rootServiceName":"media-api","rootTraceName":"GET /healthz",...}, ...]}

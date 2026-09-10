@@ -2,6 +2,10 @@
 
 [English version](architecture.md)
 
+> **Фінальний стан (10 вересня 2026):** кластер AKS видалено за рішенням власника,
+> підписка вимкнена — нижче нічого не live. Документ описує останній живий стан
+> і шлях перебудови ([costs](costs.ua.md), [recovery](recovery.ua.md)).
+
 ## Огляд
 
 Платформа — це однотенантне dev-середовище в Azure. Уся інфраструктура описана в Terraform,
@@ -32,7 +36,7 @@
   - `user` — 0–1 × `Standard_EC2as_v5`, автоскейлінг, для застосунків.
 - **Ідентичність**: System-assigned identity кластера + **OIDC issuer** + **Workload Identity** для подів.
 - **Безпека**: Azure Policy (Gatekeeper), Secrets Store CSI driver із ротацією, allowlist IP для API server.
-- **Масштабування**: автоскейлер нод в обох пулах; HPA для подів (додамо разом із застосунком).
+- **Масштабування**: автоскейлер нод в обох пулах; HPA на `media-api` (live).
 
 ### Потік секретів (Zero Trust)
 
@@ -95,6 +99,8 @@ Key Vault і PostgreSQL доступні **лише** через private endpoin
   `monitoring-grafana`).
 - `media-api` віддає `/metrics` (лічильник `media_items_created_total`), а
   `ServiceMonitor` згодовує їх Prometheus — перевірено end-to-end.
+- Redis працює подом (`Deployment`) у `media` (Azure Cache for Redis ніколи не
+  створювався) — черга між `media-api` та `media-worker`.
 - Grafana приватна (без зайвого LB-frontend): перевіряти зсередини кластера.
 - Tempo 1.24 (single binary, PVC 5Gi) + OTel-колектор (deployment) у тому самому
   неймспейсі: `media-api` експортує FastAPI- й asyncpg-спани через OTLP/HTTP
@@ -123,12 +129,20 @@ AKS-кластер сходиться (Sync/Healthy)
   `monitoring`, `ingress`), `ResourceQuota`, `LimitRange`.
 - Нічого не застосовується через `kubectl apply` — Argo CD — єдиний, хто пише в кластер.
 
-### Зовнішній доступ (Azure Load Balancer)
+### Зовнішній доступ (останній живий стан: ingress)
 
-- UI Argo CD відкритий через `LoadBalancer`-сервіс на frontend IP кластерного outbound LB
-  (`externalTrafficPolicy: Local`, floating IP). Frontend IP коштує ~$3.5/міс.
-- Демо-API відкрито так само: `media-api-lb` на порту **8080**
-  (`http://4.245.138.35:8080/healthz`), другий frontend IP ~$3.5/міс.
+- Фінальна схема: `ingress-nginx` на frontend `4.210.50.215` кластерного outbound LB,
+  nip.io-хости, self-signed demo TLS (ClusterIssuer `selfsigned-demo` —
+  Let's Encrypt HTTP-01 відкинуто: нема Azure LB hairpin для self-check).
+  - Демо-API: `https://media.4-210-50-215.nip.io` (перевірено: `/healthz` ok,
+    POST створює елементи).
+  - UI Argo CD лишився на оригінальному `LoadBalancer`-сервісі
+    (`http://20.54.22.159`, `server.insecure: true`); HTTPS ingress
+    (`https://argocd.4-210-50-215.nip.io`) закомічено в GitOps, але live не
+    перевірено — кластер помер раніше.
+- Рання ітерація давала кожному застосунку свій LB-сервіс (`media-api-lb` на `:8080`,
+  старий IP `4.245.138.35`); замінено на ingress, щоб зекономити frontend IP
+  (trial-підписка дозволяє лише 3 публічні IP).
 - `nsg-aks` дозволяє TCP 80/443 з Інтернету для frontend LB (`lb_ingress_ports`
   у модулі networking) — решта залишається закритою (zero-trust підхід).
 - Чому не `kubectl port-forward`: датаплейн Cilium на AKS перехоплює на IP нод лише
@@ -137,6 +151,6 @@ AKS-кластер сходиться (Sync/Healthy)
 
 ## Заплановано (наступні ітерації)
 
-- PDB для демо-застосунку (HPA і NetworkPolicies вже live)
-- OpenTelemetry-колектор перед Prometheus
 - Azure Front Door / Application Gateway перед ingress
+- Справжній домен + DNS-01 для довірених TLS (замість self-signed demo-сертифікатів)
+- Перевірити HTTPS ingress Argo CD live після перебудови
