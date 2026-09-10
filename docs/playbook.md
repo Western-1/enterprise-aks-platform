@@ -82,6 +82,21 @@ az postgres flexible-server show --name psql-dev-media-ne --resource-group rg-de
 az acr show --name acrdevmedia --query "{loginServer:loginServer, sku:sku.name}"
 ```
 
+### Quota-safe AKS upgrades
+
+The dev subscription has four regional vCPUs, all used by the two system nodes.
+The user pool uses `max_unavailable = "1"` in Terraform (no surge nodes). The
+system (default) pool cannot — azurerm 4.81 supports only `max_surge` there —
+so its zero-surge policy is applied once via CLI and persists (Terraform does
+not manage that field, so there is no drift):
+
+```powershell
+az aks nodepool update --resource-group rg-dev-aks-ne --cluster-name aks-dev-cluster-ne --nodepool-name system --max-surge 0 --max-unavailable 1
+```
+
+One node can be unavailable during an upgrade; increase the regional vCPU quota
+before changing to a surge policy.
+
 ## 7. Cost check
 
 ```powershell

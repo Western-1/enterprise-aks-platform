@@ -68,6 +68,13 @@ resource "azurerm_kubernetes_cluster_node_pool" "user" {
   os_sku                = "AzureLinux"
 
   orchestrator_version = var.kubernetes_version
+
+  # In-place upgrades: no surge nodes, so node-image upgrades fit the 4-vCPU regional quota.
+  # NOTE: the default (system) pool cannot use this block — azurerm 4.81 (and latest)
+  # supports only max_surge there. Its zero-surge policy is applied via CLI, see docs/playbook.md.
+  upgrade_settings {
+    max_unavailable = "1"
+  }
 }
 
 resource "azurerm_role_assignment" "aks_pull_acr" {
