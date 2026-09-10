@@ -22,20 +22,20 @@ Production-рівень Kubernetes-платформа в Azure, побудова
 - убити под і побачити, як Kubernetes його відновлює;
 - показати дашборди Grafana і секрети Key Vault, які ніколи не потрапляли в git.
 
-## Поточний статус
+## Поточний статус (фінальний, 10 вересня 2026 — кластер видалено, підписка вимкнена)
 
 | Компонент | Статус |
 |---|---|
-| VNet + підмережі + NSG + private DNS | ✅ live |
-| ACR `acrdevmedia.azurecr.io` | ✅ live |
-| Key Vault + private endpoint | ✅ live |
-| PostgreSQL (private endpoint, Entra ID без пароля) | ✅ live |
-| AKS 1.34 (Cilium, OIDC, Workload Identity, CSI) | ✅ live |
-| Log Analytics / Azure Monitor | ✅ live |
-| GitOps (Argo CD) | ✅ live — app-of-apps + cluster-config Synced |
-| Демо-застосунок (FastAPI) | ✅ live — http://4.245.138.35:8080/healthz |
-| CI/CD (GitHub Actions) | ✅ live — OIDC, без секретів |
-| Prometheus + Grafana | ✅ live — приватно, тільки в кластері |
+| VNet + підмережі + NSG + private DNS | ✅ лишилися ($0, поки вимкнено) |
+| ACR `acrdevmedia.azurecr.io` | ✅ лишився |
+| Key Vault + private endpoint | ✅ лишився |
+| PostgreSQL (private endpoint, Entra ID без пароля) | ⏸ Disabled, дані збережено |
+| AKS 1.34 (Cilium, OIDC, Workload Identity, CSI) | ❌ видалено 10.09.2026 |
+| Log Analytics / Azure Monitor | ✅ лишився |
+| GitOps (Argo CD) | ❌ зник разом із кластером (маніфести цілі в GitOps-репо) |
+| Демо-застосунок (FastAPI) | ❌ зник разом із кластером (останній live: `https://media.4-210-50-215.nip.io/healthz`) |
+| CI/CD (GitHub Actions) | ✅ на боці репо (Azure-джоби заблоковано до ввімкнення) |
+| Prometheus + Grafana | ❌ зникли разом із кластером (були приватні, тільки в кластері) |
 
 ## Архітектура (спрощено)
 
@@ -183,7 +183,7 @@ az aks get-credentials --name aks-dev-cluster-ne --resource-group rg-dev-aks-ne
 
 ![Демо-API через публічний load balancer](docs/screenshots/media-healthz.png)
 
-*Наскрізна перевірка через `http://4.245.138.35:8080`: `/healthz` повертає ok з db і redis true; POST/GET `/media/items` пише й читає рядок у PostgreSQL (view_count збільшує воркер через Redis).*
+*Історична наскрізна перевірка через `http://4.245.138.35:8080` (рання ітерація з окремим LB на застосунок): `/healthz` повертає ok з db і redis true; POST/GET `/media/items` пише й читає рядок у PostgreSQL (view_count збільшує воркер через Redis). Фінальний доступ переїхав на ingress — див. Архітектуру.*
 
 ![Поди моніторингу](docs/screenshots/monitoring-pods.png)
 

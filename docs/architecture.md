@@ -2,6 +2,11 @@
 
 [Українська версія](architecture.ua.md)
 
+> **Final state (Sep 10, 2026):** the AKS cluster was deleted per owner decision
+> and the subscription is disabled — nothing below is live. This document
+> describes the last live state and the rebuild path ([costs](costs.md),
+> [recovery](recovery.md)).
+
 ## Overview
 
 The platform is a single-tenant dev environment in Azure. All infrastructure is
@@ -32,7 +37,7 @@ repository, and workloads authenticate to Azure without any secrets in code.
   - `user` — 0–1 × `Standard_EC2as_v5`, autoscaled, for application workloads.
 - **Identity**: System-assigned cluster identity + **OIDC issuer** + **Workload Identity** for pods.
 - **Security**: Azure Policy (Gatekeeper), Secrets Store CSI driver with rotation, API server IP allowlist.
-- **Scaling**: node-pool autoscaler on both pools; HPA for pods (to be added with the app).
+- **Scaling**: node-pool autoscaler on both pools; HPA on `media-api` (live).
 
 ### Secrets flow (Zero Trust)
 
@@ -96,6 +101,8 @@ Key Vault and PostgreSQL are reachable **only** through private endpoints — no
   read it from the `monitoring-grafana` secret).
 - `media-api` exposes `/metrics` (`media_items_created_total` counter) and a
   `ServiceMonitor` feeds it to Prometheus — verified end to end.
+- Redis runs as an in-cluster `Deployment` in `media` (no Azure Cache for Redis
+  was ever created) — the queue between `media-api` and `media-worker`.
 - Grafana stays private (no extra LB frontend): check from inside the cluster.
 - Tempo 1.24 (single binary, 5Gi PVC) + OTel collector (deployment) in the same
   namespace: `media-api` exports FastAPI + asyncpg spans over OTLP/HTTP
@@ -124,12 +131,20 @@ AKS cluster converges (Sync/Healthy)
   `monitoring`, `ingress`), `ResourceQuota`, `LimitRange`.
 - Nothing is applied with `kubectl apply` — Argo CD is the only writer.
 
-### External access (Azure Load Balancer)
+### External access (last live state: ingress)
 
-- Argo CD UI is exposed via a `LoadBalancer` service on a frontend IP of the cluster's
-  outbound LB (`externalTrafficPolicy: Local`, floating IP). The frontend IP costs ~$3.5/mo.
-- The demo API is exposed the same way: `media-api-lb` on port **8080**
-  (`http://4.245.138.35:8080/healthz`), second frontend IP ~$3.5/mo.
+- Final setup: `ingress-nginx` on the cluster outbound LB frontend `4.210.50.215`,
+  nip.io hosts, self-signed demo TLS (`selfsigned-demo` ClusterIssuer —
+  Let's Encrypt HTTP-01 was abandoned: no Azure LB hairpin for the self-check).
+  - Demo API: `https://media.4-210-50-215.nip.io` (verified: `/healthz` ok,
+    POST creates items).
+  - Argo CD UI kept the original `LoadBalancer` service (`http://20.54.22.159`,
+    `server.insecure: true`); an HTTPS ingress
+    (`https://argocd.4-210-50-215.nip.io`) was committed to GitOps but never
+    verified live — the cluster died first.
+- Earlier iteration used one LB service per app (`media-api-lb` on `:8080`,
+  old IP `4.245.138.35`); replaced by ingress to save frontend IPs (the trial
+  subscription allows only 3 public IPs).
 - `nsg-aks` allows TCP 80/443 from the Internet for LB frontends (`lb_ingress_ports`
   in the networking module) — everything else stays denied (zero-trust posture).
 - Why not `kubectl port-forward`: the Cilium datapath on AKS intercepts only the nodePort
@@ -138,6 +153,6 @@ AKS cluster converges (Sync/Healthy)
 
 ## Planned (next iterations)
 
-- PDB for the demo app (HPA and NetworkPolicies are already live)
-- OpenTelemetry collector in front of Prometheus
 - Azure Front Door / Application Gateway in front of ingress
+- Real domain + DNS-01 for trusted TLS (replaces the self-signed demo certs)
+- Re-verify the Argo CD HTTPS ingress live after rebuild

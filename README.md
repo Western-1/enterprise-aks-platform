@@ -22,20 +22,20 @@ The result is a single artifact you can show at an interview and defend:
 - kill a pod and watch Kubernetes restore it,
 - show Grafana dashboards and Key Vault secrets that never touch git.
 
-## Current status
+## Current status (final, September 10, 2026 — cluster deleted, subscription disabled)
 
 | Component | Status |
 |---|---|
-| VNet + subnets + NSG + private DNS | ✅ live |
-| ACR `acrdevmedia.azurecr.io` | ✅ live |
-| Key Vault + private endpoint | ✅ live |
-| PostgreSQL (private endpoint, Entra ID passwordless) | ✅ live |
-| AKS 1.34 (Cilium, OIDC, Workload Identity, CSI) | ✅ live |
-| Log Analytics / Azure Monitor | ✅ live |
-| GitOps (Argo CD) | ✅ live — app-of-apps + cluster-config Synced |
-| Demo application (FastAPI) | ✅ live — http://4.245.138.35:8080/healthz |
-| CI/CD (GitHub Actions) | ✅ live — OIDC, no secrets |
-| Prometheus + Grafana | ✅ live — private, in-cluster only |
+| VNet + subnets + NSG + private DNS | ✅ remain ($0 while disabled) |
+| ACR `acrdevmedia.azurecr.io` | ✅ remains |
+| Key Vault + private endpoint | ✅ remains |
+| PostgreSQL (private endpoint, Entra ID passwordless) | ⏸ Disabled, data retained |
+| AKS 1.34 (Cilium, OIDC, Workload Identity, CSI) | ❌ deleted Sep 10, 2026 |
+| Log Analytics / Azure Monitor | ✅ remains |
+| GitOps (Argo CD) | ❌ gone with the cluster (manifests safe in GitOps repo) |
+| Demo application (FastAPI) | ❌ gone with the cluster (last live: `https://media.4-210-50-215.nip.io/healthz`) |
+| CI/CD (GitHub Actions) | ✅ repo-side (Azure jobs blocked until re-enable) |
+| Prometheus + Grafana | ❌ gone with the cluster (was private, in-cluster only) |
 
 ## Architecture (simplified)
 
@@ -184,7 +184,7 @@ Details: [docs/architecture.md](docs/architecture.md).
 
 ![Demo API through the public load balancer](docs/screenshots/media-healthz.png)
 
-*End-to-end check through `http://4.245.138.35:8080`: `/healthz` reports ok with db and redis true; POST/GET `/media/items` writes and reads a row in PostgreSQL (view_count is incremented by the worker through Redis).*
+*Historical end-to-end check through `http://4.245.138.35:8080` (early LB-per-app iteration): `/healthz` reports ok with db and redis true; POST/GET `/media/items` writes and reads a row in PostgreSQL (view_count is incremented by the worker through Redis). Final access moved to ingress — see Architecture.*
 
 ![Monitoring pods](docs/screenshots/monitoring-pods.png)
 

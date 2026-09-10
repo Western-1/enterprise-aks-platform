@@ -23,8 +23,9 @@ Azure Cost Management (`Cost analysis`) і оновлюються тут.
 | AKS system pool | 2× `Standard_EC2as_v5` | ~$184 / міс | | Confidential compute — єдина родина VM, яку дозволяє trial-підписка |
 | AKS user pool | `Standard_EC2as_v5`, 0–1 ноди (автоскейлінг) | $0–92 / міс | | $0 у простої |
 | PostgreSQL | `psql-dev-media-ne` (B1ms, 32 ГБ, PG16) | ~$20 / міс | | Тільки private endpoint; вхід без пароля через Entra ID (секрети KV — legacy) |
-| Публічний IP (LB Argo CD) | Standard static IP `kubernetes-*` у MC_ RG | ~$3.5 / міс | | Один додатковий frontend на наявному outbound LB |
-| Публічний IP (LB media-api) | Standard static IP `kubernetes-*` у MC_ RG | ~$3.5 / міс | | Frontend для `media-api-lb` на порту 8080 |
+| Публічний IP (LB Argo CD) | Standard static IP `kubernetes-*` у MC_ RG | ~$3.5 / міс | | Live до видалення: `20.54.22.159` (HTTP, `server.insecure: true`) |
+| Публічний IP (LB ingress-nginx) | Standard static IP `kubernetes-*` у MC_ RG | ~$3.5 / міс | | Live до видалення: `4.210.50.215` для nip.io HTTPS (media + Argo); замінив ранній окремий `media-api-lb` на `:8080` |
+| Redis | Под (`Deployment`) у `media` | $0 | | Черга між API та воркером; Azure Cache for Redis ніколи не створювався (перевірено) |
 | Сховище (Terraform state) | `sttfaksdevne02` (Standard_LRS) | ~$1 / міс | | Крихітний state-блоб; забутстраплено поза Terraform |
 | **Разом, у простої** | | **~$218 / міс** | | |
 | **Разом, під навантаженням** | | **~$310 / міс** | | |
@@ -33,8 +34,6 @@ Azure Cost Management (`Cost analysis`) і оновлюються тут.
 
 | Ресурс | Конфігурація | Орієнтовна вартість | Нотатки |
 |---|---|---|---|
-| Redis (Azure Cache for Redis) | Basic C0 | ~$14 / міс | Опційно — або Redis подом у AKS |
-| Argo CD | In-cluster | $0 | Працює на наявних нодах; frontend IP LB коштує ~$3.5/міс (див. Поточну інфраструктуру) |
 | Prometheus + Grafana | In-cluster | $0 | Працює на наявних нодах |
 
 ## Як вимірюються витрати
@@ -69,6 +68,11 @@ Azure Cost Management (`Cost analysis`) і оновлюються тут.
 - Останні відомі витрати: **$71.33 MTD (8 вересня)**. Перебудова з коду
   можлива будь-коли після ввімкнення: `terraform apply` у
   `terraform/environments/dev`, далі Argo CD синхронізує GitOps-репо.
+- Залишки (перевірено 10 вересня, після delete): node resource group
+  `MC_rg-dev-aks-ne_aks-dev-cluster-ne_northeurope` досі показує VMSS,
+  3 публічні IP, диски та identities — прибирання на боці Azure в очікуванні
+  (імовірно заблоковано вимкненою підпискою). $0, поки вимкнено; після
+  ввімкнення перевір, що група зникла, інакше видали вручну.
 
 ## Прибирання
 
