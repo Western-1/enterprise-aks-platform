@@ -133,6 +133,10 @@ argocd app get cluster-config       # details and resources
 > supported way in. The NSG `nsg-aks` allows 80/443 from the Internet for LB frontends —
 > extend `lb_ingress_ports` in Terraform for other ports.
 
+![Argo CD media-apps full tree](screenshots/argocd-media-apps-full-tree.png)
+
+*Full resource tree of `media-apps` (zoomed out): the same Healthy/Synced state — deployments, pods, services, NetworkPolicies and secrets wiring in one view. For a readable zoom see the README.*
+
 ### How to add a new app to the cluster
 
 1. Push manifests to `enterprise-aks-gitops` (e.g. `apps/media-api/`).

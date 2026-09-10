@@ -136,6 +136,10 @@ argocd app get cluster-config       # деталі та ресурси
 > NSG `nsg-aks` дозволяє 80/443 з Інтернету для frontend LB — для інших портів розширте
 > `lb_ingress_ports` у Terraform.
 
+![Повне дерево media-apps в Argo CD](screenshots/argocd-media-apps-full-tree.png)
+
+*Повне дерево ресурсів `media-apps` (здалеку): той самий Healthy/Synced стан — deployments, поди, сервіси, NetworkPolicies і секрети одним поглядом. Читабельний зум — у README.*
+
 ### Як додати новий застосунок у кластер
 
 1. Запуште маніфести в `enterprise-aks-gitops` (наприклад, `apps/media-api/`).
